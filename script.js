@@ -7,7 +7,7 @@ window.addEventListener("scroll", () => {
     let desplazamiento = window.pageYOffset;
 
     parallax.style.backgroundPositionY =
-        desplazamiento * 0.5 + "px";
+        desplazamiento * 0. + "px";
 
 });
 
