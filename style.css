@@ -14,17 +14,13 @@ body{
     background:#ffffff;
     color:#ffffff9f;
 }
-.gif-top{
-    display: block;
-    height: auto; /* centra horizontalmente */
-    width: 100%;   /* ajusta el tamaño */
-}
+
 /* HERO */
 .franja3{
-    position:absolute;
+   
     left:0;
     width:100%;
-    height:88px;
+    height:90px;
     background-color:#FFDD00;
 
     display:flex;
@@ -45,7 +41,7 @@ body{
     text-align:center;
     color:black;
     background-image: url("assets/ini.gif");
-    background-size: 70%;
+    background-size: 50%;
     background-repeat: no-repeat;
     background-position: center;
      padding:150px 20px;
@@ -210,15 +206,18 @@ html{
      color: #000000;
 }
 
+
 .avanza{
-    display: flex;
+    display: grid;
+ grid-template-columns: 1fr 2fr;
     align-items: center;
     justify-content: center;
-    gap: 10px; /* espacio real entre imagen y texto */
-    padding: 0 10px;
+    padding: 0 50px;
+
+    
 }
 .columna-imagen{
-    flex: 1;
+    widht:100%;
    
 }
 
@@ -229,8 +228,11 @@ html{
 }
 
 .columna-texto{
-    flex: 2;
+    Widht:100%;
      max-width: 800px;
+  justify-content: center; /* centra verticalmente */
+    align-items: center;     /* centra horizontalmente */
+    text-align: center;      /* centra el texto */
     
 }
 .columna-texto h3{
@@ -279,31 +281,33 @@ html{
     height: auto;
 }
 
-.ataque{
-    display: flex;
-    align-items: top;
+.ataque {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    align-items: start;
     justify-content: center;
-    gap: 10px; /* espacio real entre imagen y texto */
+    gap: 10px;
     padding: 10px 20px;
 }
-.columna-texto3{
-    flex: 2;
-    
-   
-}
 
-.columna-texto3 img{
-
-    max-width: 800px;
-    height: auto;
-}
-
-.columna-imagen3{
-    flex: 1;
+.columna-texto3 {
+    width: 100%;
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-     max-width: 600px;
-    
+    justify-content: center; /* centra verticalmente */
+    align-items: center;     /* centra horizontalmente */
+    text-align: center;      /* centra el texto */
+}
+
+.columna-imagen3 {
+    width: 100%;
+}
+
+.columna-imagen3 img {
+    max-width: 400px;
+    width: 100%;
+    height: auto;
+    display: block;
 }
 .columna-texto3 h3{
     font-size: 4rem;
