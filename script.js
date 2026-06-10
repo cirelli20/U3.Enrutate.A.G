@@ -52,5 +52,12 @@ lightbox.addEventListener("click", (e) => {
     }
 
 });
+window.addEventListener("scroll", () => {
+    const scroll = window.pageYOffset;
 
+    document.querySelectorAll(".orb").forEach((orb, i) => {
+        orb.style.transform =
+            `translateY(${scroll * (0.05 + i*0.02)}px)`;
+    });
+});
 

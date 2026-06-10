@@ -14,7 +14,48 @@ body{
     background:#ffffff;
     color:#ffffff9f;
 }
+body{
+    background:#ffffff;
+    overflow-x:hidden;
+}
 
+body::before{
+    content:"";
+    position:fixed;
+
+    width:150vw;
+    height:150vh;
+
+    top:-25vh;
+    left:-25vw;
+
+    background:
+    repeating-radial-gradient(
+        circle at center,
+        rgba(253,255,195,0.255) 0px,
+        rgba(244,240,1,0.009) 85px,
+        transparent 2px,
+        transparent 100px
+    );
+
+    animation: girarFondo 60s linear infinite;
+
+    z-index:-1;
+}
+    
+@keyframes girarFondo{
+    0%{
+        transform:rotate(0deg) scale(3);
+    }
+
+    50%{
+        transform:rotate(180deg) scale(1.05);
+    }
+
+    100%{
+        transform:rotate(360deg) scale(3);
+    }
+}
 /* HERO */
 .franja3{
    
@@ -83,7 +124,19 @@ html{
     width: 100px;          /* aumenta tamaño */
     filter: hue-rotate(40deg); /* cambia color si es SVG o PNG */
 }
+.dress-btn img{
+    animation:idle 3s ease-in-out infinite;
+}
 
+@keyframes idle{
+    0%,100%{
+        transform:translateY(0);
+    }
+
+    50%{
+        transform:translateY(-10px);
+    }
+}
 /* PARALLAX */
 
 .parallax{
@@ -204,6 +257,10 @@ html{
     font-size: 1rem;
     line-height: 1.6;
      color: #000000;
+}
+.columna-texto img{
+    width: 50%;
+    height: auto;
 }
 
 
