@@ -50,6 +50,7 @@ body::before {
 }
 .franja3 h1 { margin: 0; }
 
+
 /* ── HERO ── */
 .hero {
   height: 100vh;
@@ -64,6 +65,51 @@ body::before {
   background-position: center;
   padding: 150px 20px;
 }
+
+
+.interactua-container{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:15px;
+}
+
+.tuerca-btn{
+    width:140px;
+    height:140px;
+    border:none;
+    cursor:pointer;
+
+    background:#3e97c7;
+
+    clip-path:polygon(
+        28% 0%,
+    72% 0%,
+    100% 25%,
+    100% 75%,
+    72% 100%,
+    28% 100%,
+    0% 75%,
+    0% 25%
+    );
+
+    font-size:4rem;
+
+    transition:all .4s ease;
+}
+
+.tuerca-btn:hover{
+    transform:rotate(90deg) scale(1.1);
+}
+
+.interactua-container p{
+    font-size:1rem;
+    letter-spacing:4px;
+    font-weight:600;
+}
+
+
+
 .hero-content { max-width: 100%; padding: 40px 20px; }
 .hero h1 { font-size: 4rem; margin-bottom: 20px; }
 .hero p  { font-size: 1.2rem; margin-bottom: 30px; line-height: 1.6; }
