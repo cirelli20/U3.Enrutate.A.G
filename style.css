@@ -294,18 +294,19 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 50px;
+  gap: 50px 40px;
   padding: 100px 20px;
 }
 .bttn1, .bttn3 {
   display: inline-block;
-  padding: 15px 30px;
+  padding: 28px 50px;
   background-color: #FFDD00;
   color: black;
   text-decoration: none;
   border-radius: 50px;
   font-weight: bold;
   transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+  font-size: 1.2rem; /* ← agrega esta línea */
 }
 .bttn1:hover, .bttn3:hover {
   transform: scale(1.15);
