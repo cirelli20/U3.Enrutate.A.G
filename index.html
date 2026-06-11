@@ -1,159 +1,134 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 </head>
 <body>
-    
 
-    <!-- HERO -->
+<!-- CURSOR -->
+<div id="cursor"></div>
+
+<!-- HERO -->
 <section class="franja3">
-    <h1>¡Conoce acerca de este nuevo juego!</h1>
+  <h1>¡Conoce acerca de este nuevo juego!</h1>
 </section>
 
 <section class="hero">
-    <div class="hero-content">
-        <a href="#overlay" class="dress-btn">
-            <img src="assets/peon.svg" alt="Peón">
-        </a>
-    </div>
+  <div class="hero-content">
+    <a href="#overlay" class="dress-btn">
+      <img src="assets/peon.svg" alt="Peón">
+    </a>
+  </div>
 </section>
 
-    <!-- PARALLAX -->
-    <section class="parallax">
-         <img src="assets/1.gif" class="gif-corner" alt="GIF">
+<!-- PARALLAX -->
+<section class="parallax">
+  <img src="assets/1.gif" class="gif-corner" alt="GIF">
 
-    <div class="overlay">
-         <div id="overlay" class="overlay"></div>
-     <section class="franja">
- </section>
+  <div id="overlay" class="overlay"></div>
+  <section class="franja"></section>
 
-        <div class="overlay">
-            <h2>Esto es un juego de azar, avanzar y conseguir puntos</h2>
-        </div>
-         <img src="assets/ilustracion1.png" alt="Logo" class="logo">
-    
-         <div class="contenido">
-            <h3>Objetivo del Juego</h3>
-              <img src="assets/tuerca.azul.png" alt="tuerca1">
-             <p>Ser el primero en acumular 10 pts. recorriendo el tablero y posicionarse de vuelta en el centro del tablero.</p>
-             <p2>¡Debes tener cuidado de no perder tus puntos antes de regresar al centro!</p2>
-        </div> 
-        <img src="assets/edad.png" alt="edad" class="edad">
-      </section>
+  <div class="overlay">
+    <h2>Esto es un juego de azar, avanzar y conseguir puntos</h2>
+  </div>
+
+  <img src="assets/ilustracion1.png" alt="Logo" class="logo">
+
+  <div class="contenido">
+    <h3>Objetivo del Juego</h3>
+    <img src="assets/tuerca.azul.png" alt="tuerca1">
+    <p>Ser el primero en acumular 10 pts. recorriendo el tablero y posicionarse de vuelta en el centro del tablero.</p>
+    <p2>¡Debes tener cuidado de no perder tus puntos antes de regresar al centro!</p2>
+  </div>
+
+  <img src="assets/edad.png" alt="edad" class="edad">
+</section>
 
 <section class="info">
-    <div class="columna-imagen">
-        <img src="assets/armado.gif" alt="preparacion">
-    </div>
-
-    <div class="columna-texto">
-        <h3>Preparación</h3>
-        <p>
-            Debes separar las cartas por color (rojo, verde y azul) para luego barajar cada mazo por separado. Posicionándolos en su respectivo lugar del tablero.
-Cada jugador elegirá su pieza representante e insertándola en una casilla amarilla de inicio.
- </p>
-        <img src="assets/cartas.png" alt="cartas">
-    </div>
+  <div class="columna-imagen">
+    <img src="assets/armado.gif" alt="preparacion">
+  </div>
+  <div class="columna-texto">
+    <h3>Preparación</h3>
+    <p>Debes separar las cartas por color (rojo, verde y azul) para luego barajar cada mazo por separado. Posicionándolos en su respectivo lugar del tablero. Cada jugador elegirá su pieza representante e insertándola en una casilla amarilla de inicio.</p>
+    <img src="assets/cartas.png" alt="cartas">
+  </div>
 </section>
-
-
 
 <section class="avanza">
-    <div class="columna-imagen">
-        <img src="assets/avances.png" alt="avance">
-    </div>
-
-    <div class="columna-texto">
-        <h3>Tu turno</h3>
-        <p>
-         Cada jugador/a lo largo de la partida, debe avanzar tres pasos en las casillas. Cuando llegues a tu última casilla en cada turno, deberás sacar una carta del mismo color de la casilla en la que terminaste. Considera además que no puedes retroceder y que siempre debes tomar el camino más cercano a la casilla donde partes.
-        </p>
-    </div>
+  <div class="columna-imagen">
+    <img src="assets/avances.png" alt="avance">
+  </div>
+  <div class="columna-texto">
+    <h3>Tu turno</h3>
+    <p>Cada jugador/a lo largo de la partida, debe avanzar tres pasos en las casillas. Cuando llegues a tu última casilla en cada turno, deberás sacar una carta del mismo color de la casilla en la que terminaste. Considera además que no puedes retroceder y que siempre debes tomar el camino más cercano a la casilla donde partes.</p>
+  </div>
 </section>
 
-
-
 <section class="movimientos">
-    <div class="columna-imagen2">
-        <img src="assets/movimiento-especial2.gif" alt="movimientos">
-    </div>
-
-    <div class="columna-texto2">
-        <h3>¡Muévete!</h3>
-        <img src="assets/mov.pic.png" alt="pictogramas">
-    </div>
+  <div class="columna-imagen2">
+    <img src="assets/movimiento-especial2.gif" alt="movimientos">
+  </div>
+  <div class="columna-texto2">
+    <h3>¡Muévete!</h3>
+    <img src="assets/mov.pic.png" alt="pictogramas">
+  </div>
 </section>
 
 <section class="ataque">
-    
-    
-    <div class="columna-texto3">
-        <h3>¡Ten cuidado!</h3>
-        <img src="assets/malvada.png" alt="pictogramas2">
-    </div>
-
-    <div class="columna-imagen3">
-        <img src="assets/rojo.gif" alt="ataque">
-    </div>
+  <div class="columna-texto3">
+    <h3>¡Ten cuidado!</h3>
+    <img src="assets/malvada.png" alt="pictogramas2">
+  </div>
+  <div class="columna-imagen3">
+    <img src="assets/rojo.gif" alt="ataque">
+  </div>
 </section>
 
 <section class="Ganar">
-    
-    
-    <div class="columna-imagen4">
-         <img src="assets/verde.gif" alt="ganar">
-    </div>
-
-    <div class="columna-texto4">
-        <h3>¡Y gana!</h3>
-        <img src="assets/bonificacion.png" alt="pictogramas4">
-    </div>
-    
+  <div class="columna-imagen4">
+    <img src="assets/verde.gif" alt="ganar">
+  </div>
+  <div class="columna-texto4">
+    <h3>¡Y gana!</h3>
+    <img src="assets/bonificacion.png" alt="pictogramas4">
+  </div>
 </section>
-<section class="franja2">
-        </section>
+
+<section class="franja2"></section>
 
 <section class="final">
-
-    <div class="bttn-col">
-        <a href="exploracion.html" class="bttn1">Interactua</a>
-    </div>
-
-    <div class="final-texto">
-        <h3>¡Diviértete y Descubre más!</h3>
-
-        <img src="assets/imagen.comercial.png"
-             alt="final"
-             class="imagen-principal">
-    </div>
-
-    <div class="bttn-col">
-        <a href="https://wiki.ead.pucv.cl/Enr%C3%BAtate" class="bttn3">Más información</a>
-    </div>
-
+  <div class="bttn-col">
+    <a href="exploracion.html" class="bttn1">Interactúa</a>
+  </div>
+  <div class="final-texto">
+    <h3>¡Diviértete y Descubre más!</h3>
+    <img src="assets/imagen.comercial.png" alt="final" class="imagen-principal">
+  </div>
+  <div class="bttn-col">
+    <a href="https://wiki.ead.pucv.cl/Enr%C3%BAtate" class="bttn3">Más información</a>
+  </div>
 </section>
+
 <section class="info-final">
-
-    <div class="columna">
-        <h3>Información sobre el proyecto</h3>
-        <p>Este sitio fue diseñado en github</p>
-        
-    </div>
-
-    <div class="columna">
-        <h3>Contacto</h3>
-        <p>Antonia Gonzalez</p>
-    </div>
-
-    <div class="columna">
-        <h3>Taller de Diseño de Interacción</h3>
-        <p>wiki casipea</p>
-    </div>
-
+  <div class="columna">
+    <h3>Información sobre el proyecto</h3>
+    <p>Este sitio fue diseñado en github</p>
+  </div>
+  <div class="columna">
+    <h3>Contacto</h3>
+    <p>Antonia Gonzalez</p>
+  </div>
+  <div class="columna">
+    <h3>Taller de Diseño de Interacción</h3>
+    <p>wiki casipea</p>
+  </div>
 </section>
-    <script src="script.js"></script>
+
+<script src="script.js"></script>
 </body>
 </html>

@@ -1,63 +1,331 @@
-// PARALLAX
-
+// ── PARALLAX original ──
 const parallax = document.querySelector(".parallax");
+if (parallax) {
+  window.addEventListener("scroll", () => {
+    parallax.style.backgroundPositionY = window.pageYOffset * 0.3 + "px";
+  });
+}
 
-window.addEventListener("scroll", () => {
+// ── GSAP + ScrollTrigger ──
+gsap.registerPlugin(ScrollTrigger);
 
-    let desplazamiento = window.pageYOffset;
-
-    parallax.style.backgroundPositionY =
-        desplazamiento * 0. + "px";
-
+// ── CURSOR personalizado ──
+const cursorEl = document.getElementById('cursor');
+window.addEventListener('mousemove', e => {
+  cursorEl.style.transform = `translate(${e.clientX - 9}px, ${e.clientY - 9}px)`;
 });
 
-
-// GALERÍA 
-
-const imagenes = document.querySelectorAll(".grid img");
-const lightbox = document.getElementById("lightbox");
-
-const imagenAmpliada =
-    document.getElementById("imagen-ampliada");
-
-const cerrar =
-    document.querySelector(".cerrar");
-
-
-imagenes.forEach(imagen => {
-
-    imagen.addEventListener("click", () => {
-
-        lightbox.style.display = "flex";
-        imagenAmpliada.src = imagen.src;
-
-    });
-
+// Cursor crece sobre elementos clickeables
+document.querySelectorAll('a, button, .dress-btn').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursorEl.style.width = '32px';
+    cursorEl.style.height = '32px';
+    cursorEl.style.background = 'rgba(0,142,184,0.15)';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursorEl.style.width = '18px';
+    cursorEl.style.height = '18px';
+    cursorEl.style.background = 'transparent';
+  });
 });
 
-
-cerrar.addEventListener("click", () => {
-
-    lightbox.style.display = "none";
-
+// ── HERO: título escala al scrollear ──
+gsap.from(".hero h1", {
+  opacity: 0,
+  y: 40,
+  duration: 1,
+  ease: "power3.out",
+  delay: 0.3
 });
 
-
-lightbox.addEventListener("click", (e) => {
-
-    if(e.target === lightbox){
-
-        lightbox.style.display = "none";
-
-    }
-
-});
-window.addEventListener("scroll", () => {
-    const scroll = window.pageYOffset;
-
-    document.querySelectorAll(".orb").forEach((orb, i) => {
-        orb.style.transform =
-            `translateY(${scroll * (0.05 + i*0.02)}px)`;
-    });
+gsap.from(".dress-btn", {
+  opacity: 0,
+  scale: 0.7,
+  duration: 1,
+  ease: "back.out(1.7)",
+  delay: 0.6
 });
 
+gsap.to(".hero", {
+  scrollTrigger: {
+    trigger: ".hero",
+    start: "top top",
+    end: "bottom top",
+    scrub: true
+  }
+});
+
+// ── FRANJA3: entrada desde arriba ──
+gsap.from(".franja3 h1", {
+  opacity: 0,
+  y: -30,
+  duration: 0.8,
+  ease: "power2.out"
+});
+
+// ── PARALLAX: contenido aparece al scrollear ──
+gsap.from(".overlay h2", {
+  opacity: 0,
+  x: -60,
+  duration: 1,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: ".parallax",
+    start: "top 70%"
+  }
+});
+
+gsap.from(".logo", {
+  opacity: 0,
+  scale: 0.8,
+  duration: 1,
+  ease: "back.out(1.5)",
+  scrollTrigger: {
+    trigger: ".parallax",
+    start: "top 60%"
+  }
+});
+
+gsap.from(".contenido", {
+  opacity: 0,
+  x: 60,
+  duration: 1,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: ".parallax",
+    start: "top 50%"
+  }
+});
+
+gsap.from(".edad", {
+  opacity: 0,
+  y: 30,
+  duration: 0.8,
+  scrollTrigger: {
+    trigger: ".parallax",
+    start: "center 60%"
+  }
+});
+
+// ── SECCIÓN INFO: imagen desde izquierda, texto desde derecha ──
+gsap.from(".info .columna-imagen", {
+  opacity: 0,
+  x: -80,
+  duration: 1,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: ".info",
+    start: "top 75%"
+  }
+});
+
+gsap.from(".info .columna-texto", {
+  opacity: 0,
+  x: 80,
+  duration: 1,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: ".info",
+    start: "top 75%"
+  }
+});
+
+gsap.from(".info .columna-texto h3", {
+  opacity: 0,
+  scale: 1.2,
+  duration: 0.8,
+  ease: "power2.out",
+  scrollTrigger: {
+    trigger: ".info",
+    start: "top 70%"
+  }
+});
+
+// ── AVANZA ──
+gsap.from(".avanza .columna-imagen", {
+  opacity: 0,
+  x: -80,
+  duration: 1,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: ".avanza",
+    start: "top 75%"
+  }
+});
+
+gsap.from(".avanza .columna-texto", {
+  opacity: 0,
+  x: 80,
+  duration: 1,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: ".avanza",
+    start: "top 75%"
+  }
+});
+
+gsap.from(".avanza .columna-texto h3", {
+  opacity: 0,
+  scale: 1.3,
+  duration: 0.9,
+  ease: "back.out(1.5)",
+  scrollTrigger: {
+    trigger: ".avanza",
+    start: "top 70%"
+  }
+});
+
+// ── MOVIMIENTOS ──
+gsap.from(".movimientos .columna-imagen2", {
+  opacity: 0,
+  x: -80,
+  duration: 1,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: ".movimientos",
+    start: "top 75%"
+  }
+});
+
+gsap.from(".movimientos .columna-texto2 h3", {
+  opacity: 0,
+  y: 50,
+  scale: 1.4,
+  duration: 1,
+  ease: "back.out(1.5)",
+  scrollTrigger: {
+    trigger: ".movimientos",
+    start: "top 70%"
+  }
+});
+
+gsap.from(".movimientos .columna-texto2 img", {
+  opacity: 0,
+  y: 30,
+  duration: 0.9,
+  delay: 0.2,
+  ease: "power2.out",
+  scrollTrigger: {
+    trigger: ".movimientos",
+    start: "top 65%"
+  }
+});
+
+// ── ATAQUE ──
+gsap.from(".ataque .columna-texto3 h3", {
+  opacity: 0,
+  scale: 1.4,
+  duration: 1,
+  ease: "back.out(1.5)",
+  scrollTrigger: {
+    trigger: ".ataque",
+    start: "top 75%"
+  }
+});
+
+gsap.from(".ataque .columna-texto3 img", {
+  opacity: 0,
+  y: 40,
+  duration: 0.9,
+  delay: 0.2,
+  ease: "power2.out",
+  scrollTrigger: {
+    trigger: ".ataque",
+    start: "top 70%"
+  }
+});
+
+gsap.from(".ataque .columna-imagen3", {
+  opacity: 0,
+  x: 80,
+  duration: 1,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: ".ataque",
+    start: "top 75%"
+  }
+});
+
+// ── GANAR ──
+gsap.from(".Ganar .columna-imagen4", {
+  opacity: 0,
+  x: -80,
+  duration: 1,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: ".Ganar",
+    start: "top 75%"
+  }
+});
+
+gsap.from(".Ganar .columna-texto4 h3", {
+  opacity: 0,
+  scale: 1.4,
+  duration: 1,
+  ease: "back.out(1.5)",
+  scrollTrigger: {
+    trigger: ".Ganar",
+    start: "top 75%"
+  }
+});
+
+gsap.from(".Ganar .columna-texto4 img", {
+  opacity: 0,
+  y: 30,
+  duration: 0.9,
+  delay: 0.2,
+  ease: "power2.out",
+  scrollTrigger: {
+    trigger: ".Ganar",
+    start: "top 70%"
+  }
+});
+
+// ── FINAL: botones y título ──
+gsap.from(".final-texto h3", {
+  opacity: 0,
+  y: 40,
+  scale: 1.2,
+  duration: 1,
+  ease: "back.out(1.5)",
+  scrollTrigger: {
+    trigger: ".final",
+    start: "top 75%"
+  }
+});
+
+gsap.from(".bttn1, .bttn3", {
+  opacity: 0,
+  scale: 0.7,
+  duration: 0.8,
+  stagger: 0.2,
+  ease: "back.out(1.7)",
+  scrollTrigger: {
+    trigger: ".final",
+    start: "top 70%"
+  }
+});
+
+gsap.from(".imagen-principal", {
+  opacity: 0,
+  y: 50,
+  duration: 1,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: ".final",
+    start: "top 70%"
+  }
+});
+
+// ── INFO-FINAL: columnas en cascada ──
+gsap.from(".info-final .columna", {
+  opacity: 0,
+  y: 40,
+  duration: 0.8,
+  stagger: 0.2,
+  ease: "power2.out",
+  scrollTrigger: {
+    trigger: ".info-final",
+    start: "top 80%"
+  }
+});
