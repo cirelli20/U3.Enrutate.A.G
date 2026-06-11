@@ -250,3 +250,88 @@ nav {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
 }
+.juego{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:40px;
+}
+
+.tablero{
+    display:flex;
+    gap:40px;
+}
+
+.tuerca{
+    width:140px;
+    height:140px;
+    position:relative;
+
+    transform-style:preserve-3d;
+    transition:1s;
+
+    cursor:pointer;
+}
+
+.tuerca.girada{
+    transform:rotateY(180deg);
+}
+
+.cara{
+    position:absolute;
+    inset:0;
+
+    backface-visibility:hidden;
+
+    clip-path:polygon(
+        25% 6%,
+        75% 6%,
+        100% 50%,
+        75% 94%,
+        25% 94%,
+        0 50%
+    );
+}
+
+.frente{
+    background:#111;
+}
+
+.atras{
+    transform:rotateY(180deg);
+}
+
+#accion{
+    padding:15px 40px;
+    border:none;
+    cursor:pointer;
+    font-size:1.2rem;
+}
+
+.verde{
+    background:#5eff7a;
+}
+
+.azul{
+    background:#4ea8ff;
+}
+
+.rojo{
+    background:#ff5e5e;
+}
+
+.giro-loco{
+    animation:girar .5s linear infinite;
+}
+
+@keyframes girar{
+    from{
+        transform:rotate(0deg);
+    }
+    to{
+        transform:rotate(360deg);
+    }
+}
+

@@ -326,6 +326,26 @@ gsap.from(".info-final .columna", {
   ease: "power2.out",
   scrollTrigger: {
     trigger: ".info-final",
-    start: "top 80%"
+    start: "top 80%",
   }
+});
+
+const scrollFill =
+document.querySelector(".scroll-fill");
+
+window.addEventListener("scroll",()=>{
+
+    const scrollTop =
+    window.pageYOffset;
+
+    const docHeight =
+    document.documentElement.scrollHeight -
+    window.innerHeight;
+
+    const porcentaje =
+    (scrollTop/docHeight)*100;
+
+    scrollFill.style.height =
+    porcentaje + "%";
+
 });
