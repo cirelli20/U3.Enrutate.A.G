@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enrútate</title>
+<link rel="stylesheet" href="exploracion.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div id="fx-overlay"></div>
+<div id="toast"></div>
+
+<nav>
+  <div class="nav-logo">ENRÚTATE</div>
+  <div class="nav-links">
+    <a href="index.html" class="nav-btn">INICIO</a>
+    <button class="nav-btn" onclick="window.open('https://wiki.ead.pucv.cl/Enr%C3%BAtate', '_blank')">WIKI</button>
+    <button class="nav-btn" onclick="document.querySelector('.return').scrollIntoView({behavior:'smooth'})">TUERCAS</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="nut" id="nut"></div>
+  <h1 id="hero-title">TODO RECORRIDO<br>COMIENZA AQUÍ</h1>
+</section>
+
+<section class="orbit-section">
+  <div class="orbit" id="orbit">
+    <div class="hex h1"></div>
+    <div class="hex h2"></div>
+    <div class="hex h3"></div>
+    <div class="hex h4"></div>
+    <div class="hex h5"></div>
+    <div class="hex h6"></div>
+  </div>
+</section>
+
+<!-- SECCIÓN GIF PANORÁMICO -->
+<!-- Reemplaza el <div class="gif-placeholder"> con: <img src="assets/tu-gif.gif" alt="..."> -->
+<section class="gallery">
+  <p class="gallery-label">DESPLAZA PARA AVANZAR</p>
+  <div class="gif-track-wrap">
+    <div class="gif-track" id="gif-track">
+      <div class="gif-placeholder"> <img src="assets/avance2.gif" alt="GIF Panoramico"> 
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="return">
+  <h2>Todo esta en las piezas</h2>
+  <div class="tuercas-row">
+
+    <button class="tuerca-btn t-pos" onclick="activarTuerca('positiva')">
+      <div class="tuerca-hex">✦</div>
+      <span class="tuerca-label">Positiva</span>
+    </button>
+
+    <button class="tuerca-btn t-neg" onclick="activarTuerca('negativa')">
+      <div class="tuerca-hex">✕</div>
+      <span class="tuerca-label">Negativa</span>
+    </button>
+
+    <button class="tuerca-btn t-chaos" onclick="activarTuerca('caos')">
+      <div class="tuerca-hex">⟳</div>
+      <span class="tuerca-label">Todo se mueve</span>
+    </button>
+
+  </div>
+</section>
+
+<script src="exploracion.js"></script>
+</body>
+</html>
