@@ -9,6 +9,10 @@ if (parallax) {
 // ── GSAP + ScrollTrigger ──
 gsap.registerPlugin(ScrollTrigger);
 
+// Acciones por defecto: las animaciones se reproducen al entrar
+// y se REVIERTEN/REPITEN al volver a pasar por la sección (subir o bajar)
+const TOGGLE = "restart reverse restart reverse";
+
 // ── CURSOR personalizado ──
 const cursorEl = document.getElementById('cursor');
 window.addEventListener('mousemove', e => {
@@ -29,13 +33,27 @@ document.querySelectorAll('a, button, .dress-btn').forEach(el => {
   });
 });
 
+// ── HEADER: mini tuercas de navegación ──
+document.querySelectorAll('.mini-tuerca').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = document.querySelector(btn.dataset.target);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
 // ── HERO: título escala al scrollear ──
 gsap.from(".hero h1", {
   opacity: 0,
   y: 40,
   duration: 1,
   ease: "power3.out",
-  delay: 0.3
+  scrollTrigger: {
+    trigger: ".hero",
+    start: "top 80%",
+    toggleActions: TOGGLE
+  }
 });
 
 gsap.from(".dress-btn", {
@@ -43,7 +61,11 @@ gsap.from(".dress-btn", {
   scale: 0.7,
   duration: 1,
   ease: "back.out(1.7)",
-  delay: 0.6
+  scrollTrigger: {
+    trigger: ".hero",
+    start: "top 80%",
+    toggleActions: TOGGLE
+  }
 });
 
 gsap.to(".hero", {
@@ -60,7 +82,12 @@ gsap.from(".franja3 h1", {
   opacity: 0,
   y: -30,
   duration: 0.8,
-  ease: "power2.out"
+  ease: "power2.out",
+  scrollTrigger: {
+    trigger: ".franja3",
+    start: "top 90%",
+    toggleActions: TOGGLE
+  }
 });
 
 // ── PARALLAX: contenido aparece al scrollear ──
@@ -71,7 +98,8 @@ gsap.from(".overlay h2", {
   ease: "power3.out",
   scrollTrigger: {
     trigger: ".parallax",
-    start: "top 70%"
+    start: "top 70%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -82,7 +110,8 @@ gsap.from(".logo", {
   ease: "back.out(1.5)",
   scrollTrigger: {
     trigger: ".parallax",
-    start: "top 60%"
+    start: "top 60%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -93,7 +122,8 @@ gsap.from(".contenido", {
   ease: "power3.out",
   scrollTrigger: {
     trigger: ".parallax",
-    start: "top 50%"
+    start: "top 50%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -103,7 +133,8 @@ gsap.from(".edad", {
   duration: 0.8,
   scrollTrigger: {
     trigger: ".parallax",
-    start: "center 60%"
+    start: "center 60%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -115,7 +146,8 @@ gsap.from(".info .columna-imagen", {
   ease: "power3.out",
   scrollTrigger: {
     trigger: ".info",
-    start: "top 75%"
+    start: "top 75%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -126,7 +158,8 @@ gsap.from(".info .columna-texto", {
   ease: "power3.out",
   scrollTrigger: {
     trigger: ".info",
-    start: "top 75%"
+    start: "top 75%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -137,7 +170,8 @@ gsap.from(".info .columna-texto h3", {
   ease: "power2.out",
   scrollTrigger: {
     trigger: ".info",
-    start: "top 70%"
+    start: "top 70%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -149,7 +183,8 @@ gsap.from(".avanza .columna-imagen", {
   ease: "power3.out",
   scrollTrigger: {
     trigger: ".avanza",
-    start: "top 75%"
+    start: "top 75%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -160,7 +195,8 @@ gsap.from(".avanza .columna-texto", {
   ease: "power3.out",
   scrollTrigger: {
     trigger: ".avanza",
-    start: "top 75%"
+    start: "top 75%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -171,7 +207,8 @@ gsap.from(".avanza .columna-texto h3", {
   ease: "back.out(1.5)",
   scrollTrigger: {
     trigger: ".avanza",
-    start: "top 70%"
+    start: "top 70%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -183,7 +220,8 @@ gsap.from(".movimientos .columna-imagen2", {
   ease: "power3.out",
   scrollTrigger: {
     trigger: ".movimientos",
-    start: "top 75%"
+    start: "top 75%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -195,7 +233,8 @@ gsap.from(".movimientos .columna-texto2 h3", {
   ease: "back.out(1.5)",
   scrollTrigger: {
     trigger: ".movimientos",
-    start: "top 70%"
+    start: "top 70%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -207,7 +246,8 @@ gsap.from(".movimientos .columna-texto2 img", {
   ease: "power2.out",
   scrollTrigger: {
     trigger: ".movimientos",
-    start: "top 65%"
+    start: "top 65%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -219,7 +259,8 @@ gsap.from(".ataque .columna-texto3 h3", {
   ease: "back.out(1.5)",
   scrollTrigger: {
     trigger: ".ataque",
-    start: "top 75%"
+    start: "top 75%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -231,7 +272,8 @@ gsap.from(".ataque .columna-texto3 img", {
   ease: "power2.out",
   scrollTrigger: {
     trigger: ".ataque",
-    start: "top 70%"
+    start: "top 70%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -242,7 +284,8 @@ gsap.from(".ataque .columna-imagen3", {
   ease: "power3.out",
   scrollTrigger: {
     trigger: ".ataque",
-    start: "top 75%"
+    start: "top 75%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -254,7 +297,8 @@ gsap.from(".Ganar .columna-imagen4", {
   ease: "power3.out",
   scrollTrigger: {
     trigger: ".Ganar",
-    start: "top 75%"
+    start: "top 75%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -265,7 +309,8 @@ gsap.from(".Ganar .columna-texto4 h3", {
   ease: "back.out(1.5)",
   scrollTrigger: {
     trigger: ".Ganar",
-    start: "top 75%"
+    start: "top 75%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -277,11 +322,12 @@ gsap.from(".Ganar .columna-texto4 img", {
   ease: "power2.out",
   scrollTrigger: {
     trigger: ".Ganar",
-    start: "top 70%"
+    start: "top 70%",
+    toggleActions: TOGGLE
   }
 });
 
-// ── FINAL: botones y título ──
+// ── FINAL: botones, título y galería ──
 gsap.from(".final-texto h3", {
   opacity: 0,
   y: 40,
@@ -290,7 +336,8 @@ gsap.from(".final-texto h3", {
   ease: "back.out(1.5)",
   scrollTrigger: {
     trigger: ".final",
-    start: "top 75%"
+    start: "top 75%",
+    toggleActions: TOGGLE
   }
 });
 
@@ -302,32 +349,44 @@ gsap.from(".bttn1, .bttn3", {
   ease: "back.out(1.7)",
   scrollTrigger: {
     trigger: ".final",
-    start: "top 70%"
+    start: "top 70%",
+    toggleActions: TOGGLE
   }
 });
+// ── Galería ──
+const gallerySection =
+    document.querySelector('.scroll-gallery-section');
 
-gsap.from(".imagen-principal", {
-  opacity: 0,
-  y: 50,
-  duration: 1,
-  ease: "power3.out",
-  scrollTrigger: {
-    trigger: ".final",
-    start: "top 70%"
-  }
-});
+const galleryTrack =
+    document.querySelector('.gallery-track');
 
-// ── INFO-FINAL: columnas en cascada ──
-gsap.from(".info-final .columna", {
-  opacity: 0,
-  y: 40,
-  duration: 0.8,
-  stagger: 0.2,
-  ease: "power2.out",
-  scrollTrigger: {
-    trigger: ".info-final",
-    start: "top 80%",
-  }
+const galleryViewport =
+    document.querySelector('.gallery-viewport');
+
+window.addEventListener('scroll', () => {
+
+    const start = gallerySection.offsetTop;
+    const end =
+        start +
+        gallerySection.offsetHeight -
+        window.innerHeight;
+
+    let progress =
+        (window.scrollY - start) /
+        (end - start);
+
+    progress = Math.max(
+        0,
+        Math.min(progress, 1)
+    );
+
+    const maxMove =
+        galleryTrack.scrollWidth -
+        galleryViewport.offsetWidth;
+
+    galleryTrack.style.transform =
+        `translateX(-${progress * maxMove}px)`;
+
 });
 
 const scrollFill =
@@ -349,3 +408,18 @@ window.addEventListener("scroll",()=>{
     porcentaje + "%";
 
 });
+// ── INFO-FINAL: columnas en cascada ──
+gsap.from(".info-final .columna", {
+  opacity: 0,
+  y: 40,
+  duration: 0.8,
+  stagger: 0.2,
+  ease: "power2.out",
+  scrollTrigger: {
+    trigger: ".info-final",
+    start: "top 80%",
+    toggleActions: TOGGLE
+  }
+});
+
+
