@@ -1,107 +1,233 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enrútate</title>
-<link rel="stylesheet" href="exploracion.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <!-- CONFIGURACIÓN GENERAL: metadatos, tipografías, estilos y scripts -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Exploración interactiva del juego Enrútate: activa piezas, conecta rutas y alcanza la estrella.">
+  <title>Enrútate · Exploración</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="exploracion.css">
+
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script defer src="exploracion.js"></script>
 </head>
 <body>
+  <!-- CAPAS GLOBALES: textura visual y cursor personalizado -->
+  <div class="page-noise" aria-hidden="true"></div>
+  <div class="cursor-dot" id="cursor-dot" aria-hidden="true"></div>
+  <div class="cursor-ring" id="cursor-ring" aria-hidden="true"></div>
 
-<div class="cursor" id="cursor"></div>
-<div id="fx-overlay"></div>
-<div id="toast"></div>
+  <!-- PANTALLA DE ENTRADA: se cierra al pulsar “Comienza la experiencia” -->
+  <div class="intro-gate" id="intro-gate" aria-hidden="false">
+    <div class="intro-gate__pieces" aria-hidden="true">
+      <span class="floating-piece p1"></span>
+      <span class="floating-piece p2"></span>
+      <span class="floating-piece p3"></span>
+      <span class="floating-piece p4"></span>
+      <span class="floating-piece p5"></span>
+    </div>
 
-<nav>
-  <div class="nav-logo">ENRÚTATE</div>
-  <div class="nav-links">
-    <a href="index.html" class="nav-btn">INICIO</a>
-    <button class="nav-btn" onclick="window.open('https://wiki.ead.pucv.cl/Enr%C3%BAtate', '_blank')">WIKI</button>
-    <button class="nav-btn" onclick="document.querySelector('.return').scrollIntoView({behavior:'smooth'})">TUERCAS</button>
+    <p class="intro-gate__eyebrow">· Experiencia interactiva ·</p>
+    <h1 class="intro-gate__title">
+      <span>EN</span><span class="outline">RÚTA</span><span>TE</span>
+    </h1>
+    <p class="intro-gate__copy">Cada decisión abre, bloquea o transforma la ruta.</p>
+    <button class="primary-button" id="enter-experience" type="button">
+      Comienza la experiencia
+      <span aria-hidden="true">↘</span>
+    </button>
   </div>
-</nav>
 
-<section class="hero">
-  <div class="nut" id="nut"></div>
-  <h1 id="hero-title">TODO RECORRIDO<br>COMIENZA AQUÍ</h1>
-</section>
+  <!-- NAVEGACIÓN SUPERIOR: accesos rápidos dentro de la experiencia -->
+  <header class="topbar" id="topbar">
+    <a class="brand" href="#inicio" aria-label="Ir al inicio de Exploración">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>ENRÚTATE</span>
+    </a>
 
-<section class="orbit-section">
-  <div class="orbit" id="orbit">
-    <div class="hex h1"></div>
-    <div class="hex h2"></div>
-    <div class="hex h3"></div>
-    <div class="hex h4"></div>
-    <div class="hex h5"></div>
-    <div class="hex h6"></div>
+    <nav class="topbar-nav" aria-label="Navegación de la experiencia">
+      <button type="button" data-scroll-target="#laboratorio">Piezas</button>
+      <button type="button" data-scroll-target="#ruta">Ruta</button>
+      <a href="index.html">Inicio</a>
+    </nav>
+  </header>
+
+  <!-- INDICADOR DE PROGRESO VERTICAL DE LA PÁGINA -->
+  <div class="scroll-progress" aria-hidden="true">
+    <span id="scroll-progress-fill"></span>
   </div>
-</section>
 
-<!-- SECCIÓN GIF PANORÁMICO -->
-<!-- Reemplaza el <div class="gif-placeholder"> con: <img src="assets/tu-gif.gif" alt="..."> -->
-<section class="gallery">
-  <p class="gallery-label">DESPLAZA PARA AVANZAR</p>
-  <div class="gif-track-wrap">
-    <div class="gif-track" id="gif-track">
-      <div class="gif-placeholder"> <img src="assets/avance2.gif" alt="GIF Panoramico"> 
+  <!-- NAVEGACIÓN LATERAL POR CAPÍTULOS -->
+  <aside class="chapter-dots" aria-label="Capítulos">
+    <button class="chapter-dot is-active" data-scroll-target="#inicio" aria-label="Ir a Inicio"><span>Camino</span></button>
+    <button class="chapter-dot" data-scroll-target="#laboratorio" aria-label="Ir a Piezas"><span>laboratorio</span></button>
+    <button class="chapter-dot" data-scroll-target="#ruta" aria-label="Ir a Ruta"><span>experiencia</span></button>
+    <button class="chapter-dot" data-scroll-target="#cierre" aria-label="Ir al Cierre"><span>Cierre</span></button>
+  </aside>
+
+  <main>
+    <!-- SECCIÓN 01: PORTADA PRINCIPAL -->
+    <section class="hero section-observe" id="inicio" data-chapter="0">
+      <div class="hero-background" aria-hidden="true">
+        <span class="hero-orbit orbit-a"></span>
+        <span class="hero-orbit orbit-b"></span>
+        <span class="hero-orbit orbit-c"></span>
       </div>
-    </div>
-  </div>
-</section>
 
-<section class="return">
-  <h2>Todo esta en las piezas</h2>
-  <div class="tuercas-row">
+      <div class="hero-copy">
+        <p class="kicker">· Todo recorrido comienza con una decisión</p>
+        <h2 class="hero-title">
+          <span class="hero-title__line">LA RUTA</span>
+          <span class="hero-title__line outline-text">SE CONSTRUYE</span>
+          <span class="hero-title__line hero-title__accent">MIENTRAS AVANZAS</span>
+        </h2>
+        <p class="hero-description">
+          Explora Y encuentra una ruta continua hasta la meta
+        </p>
+        <button class="text-link" type="button" data-scroll-target="#laboratorio">
+          Comenzar recorrido <span aria-hidden="true">↓</span>
+        </button>
+      </div>
 
-    <button class="tuerca-btn t-pos" onclick="activarTuerca('positiva')">
-      <div class="tuerca-hex">✦</div>
-      <span class="tuerca-label">Positiva</span>
-    </button>
+      <div class="hero-board" aria-hidden="true">
+        <div class="hero-gear" id="hero-gear">
+          <span class="hero-gear__hole"></span>
+        </div>
+        <span class="mini-piece mini-piece--1"></span>
+        <span class="mini-piece mini-piece--2"></span>
+        <span class="mini-piece mini-piece--3"></span>
+        <span class="mini-piece mini-piece--4"></span>
+        <span class="mini-piece mini-piece--5"></span>
+        <span class="mini-piece mini-piece--6"></span>
+      </div>
 
-    <button class="tuerca-btn t-neg" onclick="activarTuerca('negativa')">
-      <div class="tuerca-hex">✕</div>
-      <span class="tuerca-label">Negativa</span>
-    </button>
+      <div class="scroll-cue" aria-hidden="true">
+        <span>Scroll</span>
+        <i></i>
+      </div>
+    </section>
 
-    <button class="tuerca-btn t-chaos" onclick="activarTuerca('caos')">
-      <div class="tuerca-hex">⟳</div>
-      <span class="tuerca-label">Todo se mueve</span>
-    </button>
+    <!-- SECCIÓN 02: LABORATORIO DE PIEZAS -->
+    <section class="laboratory section-observe" id="laboratorio" data-chapter="1">
+      <div class="laboratory-copy reveal-group">
+        <p class="kicker">· Laboratorio de piezas</p>
+        <h2>Activa una fuerza y observa cómo responde el sistema.</h2>
+  
+      </div>
 
-  </div>
-</section>
-<section class="juego">
+      <div class="mode-stage" id="mode-stage">
+        <div class="mode-stage__halo" aria-hidden="true"></div>
+        <div class="mode-stage__core" id="mode-core" aria-hidden="true">
+          <span></span>
+        </div>
+        <p class="mode-stage__label" id="mode-label">ELIGE UNA TUERCA</p>
+      </div>
 
-    <h1>Puntaje: <span id="score">0</span></h1>
+      <div class="mode-controls" role="group" aria-label="Efectos de las piezas">
+        <button class="mode-button mode-button--green" type="button" data-mode="green" aria-pressed="false">
+          <span class="mode-button__piece" aria-hidden="true"></span>
+          <span class="mode-button__meta"></span>
+          <strong>Gana</strong>
+        </button>
 
-    <div class="tablero">
+        <button class="mode-button mode-button--blue" type="button" data-mode="blue" aria-pressed="false">
+          <span class="mode-button__piece" aria-hidden="true"></span>
+          <span class="mode-button__meta"></span>
+          <strong>Muevete</strong>
+        </button>
 
-        <div class="tuerca" data-color="">
-            <div class="cara frente"></div>
-            <div class="cara atras"></div>
+        <button class="mode-button mode-button--red" type="button" data-mode="red" aria-pressed="false">
+          <span class="mode-button__piece" aria-hidden="true"></span>
+          <span class="mode-button__meta"></span>
+          <strong>Cuidado</strong>
+        </button>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 03: JUEGO DE CONSTRUCCIÓN DEL CAMINO -->
+    <section class="route-section section-observe" id="ruta" data-chapter="2">
+      <div class="route-shell">
+        <div class="route-header">
+          <div>
+            <p class="kicker">· Construye tu recorrido</p>
+            <h2>Construye tu ruta</h2>
+          </div>
+
+          <div class="route-hud" aria-label="Estado del recorrido">
+            <div class="route-stat">
+              <span>Rutas</span>
+              <strong id="connected-count">1</strong>
+            </div>
+            <div class="route-stat">
+              <span>Puntaje</span>
+              <strong id="route-score">0</strong>
+            </div>
+            <div class="route-actions">
+              <button id="route-demo" type="button">Pista verde</button>
+              <button id="route-reset" type="button">Reiniciar</button>
+            </div>
+          </div>
         </div>
 
-        <div class="tuerca" data-color="">
-            <div class="cara frente"></div>
-            <div class="cara atras"></div>
+        <div class="route-viewport" id="route-viewport">
+          <div class="route-track" id="route-track">
+            <svg class="route-lines" id="route-lines" aria-hidden="true"></svg>
+            <div class="route-grid" aria-hidden="true"></div>
+            <div class="route-nodes" id="route-nodes" aria-label="Tablero interactivo"></div>
+
+            <div class="route-start" id="route-start" aria-hidden="true">
+              <span>INICIO</span>
+            </div>
+
+            <div class="route-pawn" id="route-pawn" aria-hidden="true">
+              <span class="route-pawn__head"></span>
+              <span class="route-pawn__body"></span>
+              <span class="route-pawn__base"></span>
+            </div>
+
+            <div class="route-goal" id="route-goal" aria-label="Meta">
+              <span class="route-goal__star">★</span>
+              <span class="route-goal__label">META</span>
+            </div>
+          </div>
         </div>
 
-        <div class="tuerca" data-color="">
-            <div class="cara frente"></div>
-            <div class="cara atras"></div>
+        <div class="route-footer">
+          <p class="route-message" id="route-message" aria-live="polite">
+            ELige una pieza para activar una ruta y avanzar hacia la estrella.
+          </p>
+          
         </div>
+      </div>
+    </section>
 
-    </div>
+    <!-- SECCIÓN 04: CIERRE Y ENLACES FINALES -->
+    <section class="closing section-observe" id="cierre" data-chapter="3">
+      <div class="closing-star" id="closing-star" aria-hidden="true">★</div>
+      <p class="kicker"></p>
+      <h2 id="closing-title">No existe una única ruta<br>Existe la que logras construir</h2>
+      <p class="closing-copy" id="closing-copy">
+        Puedes volver al tablero, probar otra combinación y observar cómo cambia el recorrido.
+      </p>
+      <div class="closing-actions">
+        <button class="primary-button" type="button" data-scroll-target="#ruta">Volver a jugar</button>
+        <a class="secondary-button" href="index.html">Regresar al sitio principal</a>
+        <a
+          class="secondary-button wiki-button"
+          href="https://wiki.ead.pucv.cl/Enr%C3%BAtate"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Wiki</a>
+      </div>
+    </section>
+  </main>
 
-    <button id="accion" style="display:none;">
-        INTERACTUAR
-    </button>
-
-    <p id="mensaje"></p>
-
-</section>
-<script src="exploracion.js"></script>
+  <!-- MENSAJES BREVES: avisos de las interacciones -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
