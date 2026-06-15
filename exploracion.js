@@ -5,28 +5,28 @@
   const intro = document.getElementById('intro');
   const pawnButton = document.getElementById('pawnButton');
   const routeStage = document.getElementById('routeStage');
+  const orbitLine = document.getElementById('orbitLine');
   const nutRing = document.getElementById('nutRing');
-  const orbitLine = routeStage.querySelector('.orbit-line');
-  const routeInstruction = document.getElementById('routeInstruction');
-  const outro = document.getElementById('outro');
-  const restartButton = document.getElementById('restartButton');
-  const hudSteps = [...document.querySelectorAll('.hud-step')];
+  const scorePanel = document.getElementById('scorePanel');
+  const scoreText = document.getElementById('scoreText');
+  const scoreSlots = [...document.querySelectorAll('.score-slot')];
 
+  const redTransition = document.getElementById('redTransition');
   const blueGame = document.getElementById('blueGame');
-  const blueOrbitWheel = document.getElementById('blueOrbitWheel');
+  const blueWheel = document.getElementById('blueWheel');
   const blueBreakPiece = document.getElementById('blueBreakPiece');
-  const blueGameInstruction = document.getElementById('blueGameInstruction');
+  const blueInstruction = document.getElementById('blueInstruction');
   const blueCounter = document.getElementById('blueCounter');
   const blueFragments = [...document.querySelectorAll('.blue-fragment')];
+  const greenFeedback = document.getElementById('greenFeedback');
+  const winTransition = document.getElementById('winTransition');
+  const restartButton = document.getElementById('restartButton');
 
-  const TOTAL_PIECES = 12;
-  const PHASES = ['red', 'blue', 'green'];
-  const targetIndexes = { green: 7 };
-  const instructions = {
-    red: 'HAZ CLIC EN UNA PIEZA NEGRA',
-    blue: 'HAZ CLIC EN UNA PIEZA NEGRA',
-    green: 'HAZ CLIC EN LA PIEZA VERDE'
-  };
+  const PIECE_TYPES = [
+    'red', 'green', 'blue', 'red',
+    'blue', 'green', 'red', 'blue',
+    'green', 'red', 'blue', 'green'
+  ];
 
   const fragmentOrder = [1, 5, 3, 7, 0, 4, 2, 6];
   const fragmentMotion = [
@@ -40,52 +40,85 @@
     ['-2px', '-38px', '40deg']
   ];
 
-  let phaseIndex = 0;
-  let locked = false;
   let pieces = [];
-  let blueGameState = 'idle';
+  let started = false;
+  let locked = false;
+  let score = 0;
+  let blueState = 'idle';
   let removedBlueFragments = 0;
   let fragmentBusy = false;
 
-  const wait = ms => new Promise(resolve => window.setTimeout(resolve, ms));
+  const wait = milliseconds => new Promise(resolve => window.setTimeout(resolve, milliseconds));
 
-  function currentPhase() {
-    return PHASES[phaseIndex];
+  function initCustomCursor() {
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+
+    if (!dot || !ring || window.matchMedia('(pointer: coarse)').matches) return;
+
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let ringX = mouseX;
+    let ringY = mouseY;
+
+    window.addEventListener('pointermove', event => {
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+      dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+      dot.classList.add('is-visible');
+      ring.classList.add('is-visible');
+    });
+
+    document.addEventListener('pointerover', event => {
+      if (event.target.closest('button, a')) ring.classList.add('is-hovering');
+    });
+
+    document.addEventListener('pointerout', event => {
+      if (event.target.closest('button, a')) ring.classList.remove('is-hovering');
+    });
+
+    const follow = () => {
+      ringX += (mouseX - ringX) * 0.16;
+      ringY += (mouseY - ringY) * 0.16;
+      ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+      window.requestAnimationFrame(follow);
+    };
+
+    follow();
   }
 
   function createPieces() {
     nutRing.innerHTML = '';
     pieces = [];
 
-    for (let index = 0; index < TOTAL_PIECES; index += 1) {
+    PIECE_TYPES.forEach((type, index) => {
       const piece = document.createElement('button');
-      piece.type = 'button';
-      piece.className = 'ring-piece';
-      piece.setAttribute('aria-label', `Pieza ${index + 1}`);
-      piece.innerHTML = '<svg viewBox="0 0 64.45 74.09" aria-hidden="true"><use href="#icon-nut"></use></svg>';
-
-      const angle = (index / TOTAL_PIECES) * Math.PI * 2 - Math.PI / 2;
+      const angle = (index / PIECE_TYPES.length) * Math.PI * 2 - Math.PI / 2;
       const rotation = (angle * 180 / Math.PI) + 90;
 
+      piece.type = 'button';
+      piece.className = `ring-piece type-${type}`;
+      piece.dataset.type = type;
+      piece.dataset.index = String(index);
       piece.dataset.angle = String(angle);
+      piece.setAttribute('aria-label', `Tuerca ${index + 1}. Su color se descubre al pasar el cursor.`);
       piece.style.setProperty('--piece-rotation', `${rotation}deg`);
-      piece.style.setProperty('--piece-delay', `${index * 45}ms`);
-      piece.addEventListener('click', () => handlePieceClick(piece, index));
+      piece.style.setProperty('--piece-delay', `${index * 42}ms`);
+      piece.innerHTML = '<svg viewBox="0 0 64.45 74.09" aria-hidden="true"><use href="#icon-nut"></use></svg>';
+      piece.addEventListener('click', () => handlePieceClick(piece));
 
       nutRing.appendChild(piece);
       pieces.push(piece);
-    }
+    });
   }
 
   function positionPieces() {
     if (!pieces.length) return;
 
-    const pieceRadius = (pieces[0].offsetWidth || 80) * 0.72;
-    const isMobile = window.innerWidth <= 760;
-    const gapX = isMobile ? 8 : 14;
-    const gapY = isMobile ? 30 : 14;
-    const radiusX = orbitLine.offsetWidth / 2 + pieceRadius + gapX;
-    const radiusY = orbitLine.offsetHeight / 2 + pieceRadius + gapY;
+    const pieceRadius = (pieces[0].offsetWidth || 80) * 0.7;
+    const mobile = window.innerWidth <= 760;
+    const radiusX = orbitLine.offsetWidth / 2 + pieceRadius + (mobile ? 8 : 14);
+    const radiusY = orbitLine.offsetHeight / 2 + pieceRadius + (mobile ? 30 : 14);
 
     pieces.forEach(piece => {
       const angle = Number(piece.dataset.angle);
@@ -96,46 +129,66 @@
     });
   }
 
-  function updateHud() {
-    hudSteps.forEach((step, index) => {
-      step.classList.toggle('is-active', index === phaseIndex);
-      step.classList.toggle('is-complete', index < phaseIndex);
+  function revealPieces() {
+    window.requestAnimationFrame(() => {
+      routeStage.classList.add('is-visible');
+      routeStage.setAttribute('aria-hidden', 'false');
+      scorePanel.classList.add('is-visible');
+
+      window.requestAnimationFrame(() => {
+        pieces.forEach(piece => piece.classList.add('is-ready'));
+      });
     });
   }
 
-  function configurePhase() {
-    const phase = currentPhase();
-    routeStage.dataset.phase = phase;
-    routeInstruction.textContent = instructions[phase];
+  async function beginExperience() {
+    if (started || locked) return;
 
+    started = true;
+    locked = true;
+    intro.classList.add('is-hidden');
+    await wait(620);
+    intro.setAttribute('aria-hidden', 'true');
+    revealPieces();
+    await wait(1050);
+    locked = false;
+  }
+
+  function muteRoute() {
+    routeStage.classList.add('is-muted');
+    pieces.forEach(piece => { piece.disabled = true; });
+  }
+
+  function restoreRoute() {
+    routeStage.classList.remove('is-muted');
     pieces.forEach(piece => {
-      piece.className = 'ring-piece';
-      piece.disabled = true;
+      piece.disabled = piece.classList.contains('is-collected');
     });
+  }
 
-    if (phase === 'red' || phase === 'blue') {
-      pieces.forEach(piece => {
-        piece.disabled = false;
-      });
-    } else {
-      const target = pieces[targetIndexes.green];
-      target.disabled = false;
-      target.classList.add('is-green', 'is-target');
-    }
+  async function playRedTransition() {
+    muteRoute();
+    redTransition.classList.add('is-visible');
+    redTransition.setAttribute('aria-hidden', 'false');
 
-    updateHud();
+    await wait(2850);
+
+    redTransition.classList.remove('is-visible');
+    redTransition.setAttribute('aria-hidden', 'true');
+    restoreRoute();
+    locked = false;
   }
 
   function resetBlueGame() {
-    blueGameState = 'idle';
+    blueState = 'idle';
     removedBlueFragments = 0;
     fragmentBusy = false;
     blueGame.className = 'blue-game';
     blueGame.setAttribute('aria-hidden', 'true');
-    blueOrbitWheel.disabled = false;
+    blueWheel.disabled = false;
     blueBreakPiece.disabled = true;
     blueBreakPiece.classList.remove('is-hit');
-    blueGameInstruction.textContent = 'HAZ CLIC PARA UNIR LAS PIEZAS';
+    blueInstruction.textContent = 'HAZ CLIC PARA UNIR LAS PIEZAS';
     blueCounter.textContent = '';
 
     blueFragments.forEach((fragment, index) => {
@@ -146,90 +199,42 @@
     });
   }
 
-  function showRoute() {
-    scene.className = 'scene';
-    resetBlueGame();
-    outro.classList.remove('is-visible');
-    outro.setAttribute('aria-hidden', 'true');
-    routeStage.classList.remove('is-visible');
-
-    createPieces();
-    positionPieces();
-    configurePhase();
-
-    requestAnimationFrame(() => {
-      routeStage.classList.add('is-visible');
-      routeStage.setAttribute('aria-hidden', 'false');
-      requestAnimationFrame(() => {
-        pieces.forEach(piece => piece.classList.add('is-ready'));
-      });
-    });
-  }
-
-  async function beginExperience() {
-    if (locked) return;
-    locked = true;
-
-    intro.classList.add('is-hidden');
-    await wait(650);
-    intro.setAttribute('aria-hidden', 'true');
-    showRoute();
-
-    await wait(1150);
-    locked = false;
-  }
-
-  async function colourAllPiecesBlue(selectedPiece) {
-    selectedPiece.classList.add('is-blue');
-
-    const remaining = pieces.filter(piece => piece !== selectedPiece);
-    for (const piece of remaining) {
-      await wait(45);
-      piece.classList.add('is-blue');
-    }
-
-    await wait(280);
-  }
-
   async function startBlueGame() {
-    routeStage.classList.remove('is-visible');
-    routeStage.setAttribute('aria-hidden', 'true');
-    scene.classList.add('is-transitioning', 'is-blue-game');
-
+    muteRoute();
     resetBlueGame();
-    blueGameState = 'orbit';
+    blueState = 'orbit';
     blueGame.classList.add('is-visible', 'is-orbiting');
     blueGame.setAttribute('aria-hidden', 'false');
-    blueGameInstruction.textContent = 'HAZ CLIC EN LAS PIEZAS PARA UNIRLAS';
+    blueInstruction.textContent = 'HAZ CLIC EN LAS PIEZAS PARA UNIRLAS';
     blueCounter.textContent = 'LAS PIEZAS ESTÁN GIRANDO';
 
-    await wait(500);
+    await wait(450);
     locked = false;
   }
 
   async function mergeBluePieces() {
-    if (blueGameState !== 'orbit') return;
+    if (blueState !== 'orbit' || locked) return;
 
-    blueGameState = 'merging';
     locked = true;
-    blueOrbitWheel.disabled = true;
+    blueState = 'merging';
+    blueWheel.disabled = true;
     blueGame.classList.remove('is-orbiting');
     blueGame.classList.add('is-merging');
-    blueGameInstruction.textContent = 'LAS PIEZAS SE ESTÁN UNIENDO';
+    blueInstruction.textContent = 'LAS PIEZAS SE ESTÁN UNIENDO';
     blueCounter.textContent = '';
 
     await wait(880);
 
     blueGame.classList.add('is-piece-ready');
     blueBreakPiece.disabled = false;
-    blueGameInstruction.textContent = 'HAZ CLIC EN LA PIEZA PARA DESARMARLA';
+    blueInstruction.textContent = 'HAZ CLIC EN LA PIEZA PARA DESARMARLA';
     blueCounter.textContent = `${blueFragments.length} FRAGMENTOS RESTANTES`;
-    blueGameState = 'breaking';
+    blueState = 'breaking';
     locked = false;
   }
 
   async function removeBlueFragment() {
-    if (blueGameState !== 'breaking' || fragmentBusy) return;
+    if (blueState !== 'breaking' || fragmentBusy) return;
 
     fragmentBusy = true;
     const fragmentIndex = fragmentOrder[removedBlueFragments];
@@ -254,94 +259,139 @@
       return;
     }
 
-    blueGameState = 'complete';
+    blueState = 'complete';
     blueGame.classList.add('is-complete');
-    blueGameInstruction.textContent = 'RUTA AZUL COMPLETADA';
+    blueInstruction.textContent = 'RUTA AZUL COMPLETADA';
     blueCounter.textContent = '';
     blueBreakPiece.disabled = true;
 
     await wait(760);
 
-    scene.classList.remove('is-blue-game', 'is-transitioning');
-    blueGame.className = 'blue-game';
-    blueGame.setAttribute('aria-hidden', 'true');
-    phaseIndex = 2;
-    showRoute();
-    await wait(1150);
+    resetBlueGame();
+    restoreRoute();
     locked = false;
     fragmentBusy = false;
   }
 
-  async function handlePieceClick(piece, index) {
-    if (locked || !routeStage.classList.contains('is-visible')) return;
+  function updateScore() {
+    scoreText.textContent = `${score}/3`;
+    scoreSlots.forEach((slot, index) => {
+      slot.classList.toggle('is-filled', index < score);
+    });
+  }
 
-    const phase = currentPhase();
-    if (phase === 'green' && index !== targetIndexes.green) return;
+  function animatePointToScore(piece, slotIndex) {
+    const source = piece.getBoundingClientRect();
+    const target = scoreSlots[slotIndex].getBoundingClientRect();
+    const token = document.createElement('span');
 
-    locked = true;
-    pieces.forEach(item => {
-      item.disabled = true;
-      item.classList.remove('is-target');
+    token.className = 'flying-point';
+    token.textContent = '+1';
+    token.style.left = `${source.left + source.width / 2 - 17}px`;
+    token.style.top = `${source.top + source.height / 2 - 17}px`;
+    document.body.appendChild(token);
+
+    const deltaX = target.left + target.width / 2 - (source.left + source.width / 2);
+    const deltaY = target.top + target.height / 2 - (source.top + source.height / 2);
+
+    const animation = token.animate([
+      { transform: 'translate(0, 0) scale(1) rotate(0deg)', opacity: 1 },
+      { transform: `translate(${deltaX * .52}px, ${deltaY * .35 - 75}px) scale(1.22) rotate(120deg)`, opacity: 1, offset: .55 },
+      { transform: `translate(${deltaX}px, ${deltaY}px) scale(.55) rotate(250deg)`, opacity: .2 }
+    ], {
+      duration: 820,
+      easing: 'cubic-bezier(.2,.8,.2,1)',
+      fill: 'forwards'
     });
 
-    if (phase === 'red') {
-      piece.classList.add('is-red');
-      await wait(260);
-      await playTransition('red', 3900);
-      phaseIndex = 1;
-      showRoute();
-      await wait(1150);
-      locked = false;
+    animation.addEventListener('finish', () => token.remove());
+  }
+
+  async function collectGreenPoint(piece) {
+    const slotIndex = score;
+    piece.classList.add('is-collected');
+    piece.disabled = true;
+    animatePointToScore(piece, slotIndex);
+
+    score += 1;
+    muteRoute();
+
+    greenFeedback.classList.add('is-visible');
+    greenFeedback.setAttribute('aria-hidden', 'false');
+    await wait(650);
+    updateScore();
+    await wait(500);
+    greenFeedback.classList.remove('is-visible');
+    greenFeedback.setAttribute('aria-hidden', 'true');
+
+    if (score >= 3) {
+      await playWinTransition();
       return;
     }
 
-    if (phase === 'blue') {
-      await colourAllPiecesBlue(piece);
+    restoreRoute();
+    locked = false;
+  }
+
+  async function playWinTransition() {
+    scorePanel.classList.remove('is-visible');
+    routeStage.classList.remove('is-visible');
+    routeStage.setAttribute('aria-hidden', 'true');
+    winTransition.classList.add('is-visible');
+    winTransition.setAttribute('aria-hidden', 'false');
+    locked = false;
+  }
+
+  async function handlePieceClick(piece) {
+    if (locked || !routeStage.classList.contains('is-visible') || piece.disabled) return;
+
+    locked = true;
+    const type = piece.dataset.type;
+
+    if (type === 'red') {
+      await playRedTransition();
+      return;
+    }
+
+    if (type === 'blue') {
       await startBlueGame();
       return;
     }
 
-    await playTransition('green', 3900);
-    routeStage.classList.remove('is-visible');
-    routeStage.setAttribute('aria-hidden', 'true');
-    hudSteps.forEach(step => {
-      step.classList.remove('is-active');
-      step.classList.add('is-complete');
-    });
-    outro.classList.add('is-visible');
-    outro.setAttribute('aria-hidden', 'false');
-    locked = false;
-  }
-
-  async function playTransition(type, duration) {
-    routeStage.classList.remove('is-visible');
-    routeStage.setAttribute('aria-hidden', 'true');
-    scene.classList.add('is-transitioning', `is-${type}-transition`);
-    await wait(duration);
-    scene.classList.remove(`is-${type}-transition`, 'is-transitioning');
+    await collectGreenPoint(piece);
   }
 
   function resetExperience() {
     locked = false;
-    phaseIndex = 0;
-    scene.className = 'scene';
-    routeStage.classList.remove('is-visible');
+    started = false;
+    score = 0;
+    updateScore();
+    resetBlueGame();
+
+    redTransition.classList.remove('is-visible');
+    greenFeedback.classList.remove('is-visible');
+    winTransition.classList.remove('is-visible');
+    winTransition.setAttribute('aria-hidden', 'true');
+    scorePanel.classList.remove('is-visible');
+
+    routeStage.className = 'route-stage';
     routeStage.setAttribute('aria-hidden', 'true');
-    outro.classList.remove('is-visible');
-    outro.setAttribute('aria-hidden', 'true');
     intro.classList.remove('is-hidden');
     intro.setAttribute('aria-hidden', 'false');
-    resetBlueGame();
-    updateHud();
+
+    createPieces();
+    positionPieces();
   }
 
   pawnButton.addEventListener('click', beginExperience);
-  restartButton.addEventListener('click', resetExperience);
-  blueOrbitWheel.addEventListener('click', mergeBluePieces);
+  blueWheel.addEventListener('click', mergeBluePieces);
   blueBreakPiece.addEventListener('click', removeBlueFragment);
-
+  restartButton.addEventListener('click', resetExperience);
   window.addEventListener('resize', positionPieces);
 
+  initCustomCursor();
+  createPieces();
+  positionPieces();
   resetBlueGame();
-  updateHud();
+  updateScore();
 })();

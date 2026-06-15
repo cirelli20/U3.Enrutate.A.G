@@ -3,132 +3,159 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Experiencia interactiva de Enrútate activada mediante clics.">
+  <meta name="description" content="Exploración interactiva del juego Enrútate.">
   <title>Enrútate — Exploración</title>
   <link rel="stylesheet" href="exploracion.css">
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" focusable="false">
     <symbol id="icon-nut" viewBox="0 0 64.45 74.09">
-      <path fill="currentColor" d="M43.33,6.98h-25.38L0,24.93v25.38l17.95,17.95h25.38l17.95-17.95v-25.38L43.33,6.98ZM39.19,46.16c-4.73,4.72-12.37,4.72-17.07,0-4.73-4.72-4.73-12.36,0-17.07,4.71-4.72,12.36-4.73,17.07,0,4.72,4.71,4.71,12.36,0,17.07Z"/>
+      <path fill="currentColor" fill-rule="evenodd" d="M43.33,6.98h-25.38L0,24.93v25.38l17.95,17.95h25.38l17.95-17.95v-25.38L43.33,6.98ZM39.19,46.16c-4.73,4.72-12.37,4.72-17.07,0-4.73-4.72-4.73-12.36,0-17.07,4.71-4.72,12.36-4.73,17.07,0,4.72,4.71,4.71,12.36,0,17.07Z"/>
+    </symbol>
+
+    <!-- Formas exactas tomadas de los SVG entregados. -->
+    <symbol id="icon-red-piece" viewBox="0 0 122.48 118.66" preserveAspectRatio="xMidYMid meet">
+      <path fill="currentColor" d="M88.32,45.91c-4.49-1.46-8.99-2.92-13.48-4.38-1.46-4.49-2.92-8.99-4.38-13.48-4.21,2.14-8.42,4.29-12.63,6.43-4.21-2.14-8.42-4.29-12.63-6.43-1.46,4.49-2.92,8.99-4.38,13.48-4.49,1.46-8.99,2.92-13.48,4.38,2.14,4.21,4.29,8.42,6.43,12.63-2.14,4.21-4.29,8.42-6.43,12.63,4.49,1.46,8.99,2.92,13.48,4.38,1.46,4.49,2.92,8.99,4.38,13.48,4.21-2.14,8.42-4.29,12.63-6.43,4.21,2.14,8.42,4.29,12.63,6.43,1.46-4.49,2.92-8.99,4.38-13.48,4.49-1.46,8.99-2.92,13.48-4.38-2.14-4.21-4.29-8.42-6.43-12.63,2.14-4.21,4.29-8.42,6.43-12.63ZM66.68,67.41c-4.91,4.9-12.84,4.9-17.73,0-4.91-4.9-4.91-12.83,0-17.73,4.89-4.9,12.83-4.91,17.73,0,4.9,4.89,4.89,12.83,0,17.73Z"/>
+    </symbol>
+
+    <symbol id="icon-yellow-piece" viewBox="0 0 122.48 118.66" preserveAspectRatio="xMidYMid meet">
+      <path fill="currentColor" d="M90.44,46c-4.33-1.41-8.65-2.81-12.98-4.22-1.41-4.33-2.81-8.65-4.22-12.98-4.06,2.06-8.11,4.13-12.17,6.19-4.05-2.06-8.11-4.13-12.17-6.19-1.41,4.33-2.81,8.65-4.22,12.98-4.33,1.41-8.65,2.81-12.98,4.22,2.06,4.05,4.13,8.11,6.19,12.16-2.06,4.05-4.13,8.11-6.19,12.16,4.33,1.41,8.65,2.81,12.98,4.22,1.41,4.33,2.81,8.65,4.22,12.98,4.06-2.06,8.11-4.13,12.17-6.19,4.06,2.06,8.11,4.13,12.17,6.19,1.41-4.33,2.81-8.65,4.22-12.98,4.33-1.41,8.65-2.81,12.98-4.22-2.06-4.05-4.13-8.11-6.19-12.16,2.06-4.05,4.13-8.11,6.19-12.16ZM69.62,66.7c-4.73,4.72-12.36,4.72-17.07,0-4.73-4.72-4.73-12.35,0-17.07,4.71-4.72,12.35-4.73,17.07,0,4.72,4.71,4.71,12.35,0,17.07Z"/>
+      <path fill="currentColor" d="M81.48,8.91h-40.8s-28.85,28.85-28.85,28.85v40.8l28.85,28.85h40.8s28.85-28.85,28.85-28.85v-40.8s-28.85-28.85-28.85-28.85ZM93.75,71.7l-14.44,4.7-4.7,14.44-13.53-6.89-13.53,6.89-4.7-14.44-14.44-4.7,6.89-13.53-6.89-13.53,14.44-4.7,4.7-14.44,13.53,6.89,13.53-6.89,4.7,14.44,14.44,4.7-6.89,13.53,6.89,13.53Z"/>
     </symbol>
   </svg>
 
-  <header class="hud" aria-label="Navegación de la experiencia">
+  <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+  <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
+
+  <header class="hud">
     <a class="hud-home" href="index.html">ENRÚTATE</a>
 
-    <div class="hud-route" aria-label="Progreso">
-      <span class="hud-step is-active" data-step="red">
-        <svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg>
-      </span>
-      <span class="hud-dots"></span>
-      <span class="hud-step" data-step="blue">
-        <svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg>
-      </span>
-      <span class="hud-dots"></span>
-      <span class="hud-step" data-step="green">
-        <svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg>
-      </span>
+    <div class="score-panel" id="scorePanel" aria-label="Puntos verdes acumulados">
+      <span class="score-label">PUNTOS</span>
+      <div class="score-slots">
+        <span class="score-slot" data-slot="0"></span>
+        <span class="score-slot" data-slot="1"></span>
+        <span class="score-slot" data-slot="2"></span>
+      </div>
+      <strong id="scoreText">0/3</strong>
     </div>
 
-    <a class="hud-info" href="https://wiki.ead.pucv.cl/Enr%C3%BAtate" target="_blank" rel="noreferrer">WIKI</a>
+    <a class="hud-wiki" href="https://wiki.ead.pucv.cl/Enr%C3%BAtate" target="_blank" rel="noreferrer">WIKI</a>
   </header>
 
-  <div class="cursor" id="cursor" aria-hidden="true"></div>
-
   <main class="experience">
-    <section class="scene" id="scene" aria-label="Recorrido interactivo de Enrútate">
-      <div class="pattern pattern-left" aria-hidden="true"></div>
-      <div class="pattern pattern-right" aria-hidden="true"></div>
+    <section class="scene" id="scene" aria-label="Experiencia interactiva de Enrútate">
+      <div class="background-pattern" aria-hidden="true"></div>
 
-      <div class="yellow-wash" id="yellowWash" aria-hidden="true"></div>
-      <div class="red-field" id="redField" aria-hidden="true"></div>
-      <div class="red-close" id="redClose" aria-hidden="true"></div>
-
-      <div class="intro" id="intro">
-        <button class="pawn-button" id="pawnButton" type="button" aria-label="Comenzar recorrido">
-          <img src="assets/inicio-09.svg" alt="Peón de Enrútate">
+      <!-- ESTADO INICIAL -->
+      <section class="intro" id="intro" aria-labelledby="introTitle">
+        <button class="pawn-button" id="pawnButton" type="button" aria-label="Mostrar las piezas del recorrido">
+          <img src="assets/inicio-09.svg" alt="Peón morado de Enrútate">
         </button>
 
-        <div class="chapter-copy">
-          <p>HAZ CLIC EN EL PEÓN</p>
-          <h1>TODO<br>RECORRIDO<br>COMIENZA AQUÍ</h1>
+        <div class="intro-copy">
+          <p>HAZ CLIC EN EL PEÓN MORADO</p>
+          <h1 id="introTitle">TODO<br>RECORRIDO<br>COMIENZA AQUÍ</h1>
         </div>
-      </div>
+      </section>
 
-      <div class="route-stage" id="routeStage" aria-hidden="true">
-        <div class="orbit-line" aria-hidden="true"></div>
+      <!-- PEÓN CENTRAL + TUERCAS NEGRAS -->
+      <section class="route-stage" id="routeStage" aria-hidden="true">
+        <div class="orbit-line" id="orbitLine" aria-hidden="true"></div>
 
         <div class="route-pawn" aria-hidden="true">
           <img src="assets/inicio-09.svg" alt="">
         </div>
 
-        <div class="nut-ring" id="nutRing" aria-label="Piezas del recorrido"></div>
+        <div class="nut-ring" id="nutRing" aria-label="Tuercas interactivas"></div>
 
-        <p class="route-instruction" id="routeInstruction">HAZ CLIC EN UNA PIEZA NEGRA</p>
-      </div>
-
-      <div class="transition-layer" id="transitionLayer" aria-hidden="true">
-        <button class="focus-piece focus-red" id="focusRed" type="button" tabindex="-1" aria-hidden="true">
-          <img src="tuerca-04.png" alt="">
-        </button>
-
-        <button class="focus-piece focus-blue" id="focusBlue" type="button" tabindex="-1" aria-hidden="true">
-          <img src="tuerca-03.png" alt="">
-        </button>
-
-        <button class="focus-piece focus-green" id="focusGreen" type="button" tabindex="-1" aria-hidden="true">
-          <img src="tuerca-05.png" alt="">
-        </button>
-
-        <div class="blue-system" id="blueSystem" aria-hidden="true">
-          <div class="blue-ring-main"><span class="blue-marker"></span></div>
-          <div class="blue-ring-segmented"></div>
+        <div class="route-help">
+          <p>DESCUBRE EL COLOR CON EL CURSOR</p>
+          <strong>HAZ CLIC EN UNA TUERCA</strong>
         </div>
+      </section>
 
-        <section class="blue-game" id="blueGame" aria-hidden="true">
-          <p class="blue-game-label" id="blueGameInstruction">HAZ CLIC PARA UNIR LAS PIEZAS</p>
+      <!-- TRANSICIÓN ROJA -->
+      <section class="red-transition" id="redTransition" aria-hidden="true">
+        <svg class="red-stars" aria-hidden="true" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <pattern id="redExactPattern" width="520" height="390" patternUnits="userSpaceOnUse" patternTransform="rotate(-3)">
+              <rect width="520" height="390" fill="#ffffff"></rect>
+              <g color="#d62716">
+                <use href="#icon-red-piece" x="8" y="12" width="150" height="145.32" transform="rotate(-18 83 84.66)"></use>
+                <use href="#icon-red-piece" x="178" y="18" width="90" height="87.19" transform="rotate(24 223 61.6)"></use>
+                <use href="#icon-red-piece" x="296" y="4" width="158" height="153.07" transform="rotate(7 375 80.54)"></use>
+                <use href="#icon-red-piece" x="58" y="158" width="98" height="94.94" transform="rotate(13 107 205.47)"></use>
+                <use href="#icon-red-piece" x="182" y="126" width="146" height="141.45" transform="rotate(-12 255 196.72)"></use>
+                <use href="#icon-red-piece" x="360" y="154" width="86" height="83.32" transform="rotate(31 403 195.66)"></use>
+                <use href="#icon-red-piece" x="425" y="116" width="118" height="114.32" transform="rotate(-20 484 173.16)"></use>
+                <use href="#icon-red-piece" x="2" y="282" width="126" height="122.07" transform="rotate(26 65 343.04)"></use>
+                <use href="#icon-red-piece" x="148" y="298" width="78" height="75.57" transform="rotate(-32 187 335.79)"></use>
+                <use href="#icon-red-piece" x="248" y="264" width="140" height="135.63" transform="rotate(17 318 331.82)"></use>
+                <use href="#icon-red-piece" x="402" y="286" width="104" height="100.76" transform="rotate(-12 454 336.38)"></use>
+              </g>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#redExactPattern)"></rect>
+        </svg>
+        <div class="red-lightning red-lightning-left" aria-hidden="true"></div>
+        <div class="red-lightning red-lightning-right" aria-hidden="true"></div>
+        <p>RUTA BLOQUEADA</p>
+      </section>
 
-          <button class="blue-orbit-wheel" id="blueOrbitWheel" type="button" aria-label="Unir las piezas azules">
-            <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09" aria-hidden="true"><use href="#icon-nut"></use></svg></span>
-            <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09" aria-hidden="true"><use href="#icon-nut"></use></svg></span>
-            <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09" aria-hidden="true"><use href="#icon-nut"></use></svg></span>
-            <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09" aria-hidden="true"><use href="#icon-nut"></use></svg></span>
-            <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09" aria-hidden="true"><use href="#icon-nut"></use></svg></span>
-            <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09" aria-hidden="true"><use href="#icon-nut"></use></svg></span>
-          </button>
+      <!-- TRANSICIÓN / MINIJUEGO AZUL -->
+      <section class="blue-game" id="blueGame" aria-hidden="true">
+        <p class="blue-title" id="blueInstruction">HAZ CLIC PARA UNIR LAS PIEZAS</p>
 
-          <button class="blue-break-piece" id="blueBreakPiece" type="button" aria-label="Desarmar la pieza azul">
-            <svg viewBox="0 0 200 200" role="img" aria-label="Pieza azul dividida en fragmentos">
-              <polygon class="blue-fragment" data-fragment="0" points="68.6,24.2 131.4,24.2 114.5,64.9 85.5,64.9"/>
-              <polygon class="blue-fragment" data-fragment="1" points="131.4,24.2 175.8,68.6 135.1,85.5 114.5,64.9"/>
-              <polygon class="blue-fragment" data-fragment="2" points="175.8,68.6 175.8,131.4 135.1,114.5 135.1,85.5"/>
-              <polygon class="blue-fragment" data-fragment="3" points="175.8,131.4 131.4,175.8 114.5,135.1 135.1,114.5"/>
-              <polygon class="blue-fragment" data-fragment="4" points="131.4,175.8 68.6,175.8 85.5,135.1 114.5,135.1"/>
-              <polygon class="blue-fragment" data-fragment="5" points="68.6,175.8 24.2,131.4 64.9,114.5 85.5,135.1"/>
-              <polygon class="blue-fragment" data-fragment="6" points="24.2,131.4 24.2,68.6 64.9,85.5 64.9,114.5"/>
-              <polygon class="blue-fragment" data-fragment="7" points="24.2,68.6 68.6,24.2 85.5,64.9 64.9,85.5"/>
-              <circle class="blue-core" cx="100" cy="100" r="31"/>
-            </svg>
-          </button>
+        <button class="blue-wheel" id="blueWheel" type="button" aria-label="Unir las piezas azules">
+          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
+          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
+          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
+          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
+          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
+          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
+        </button>
 
-          <p class="blue-counter" id="blueCounter" aria-live="polite"></p>
-        </section>
+        <button class="blue-break-piece" id="blueBreakPiece" type="button" aria-label="Desarmar la pieza azul">
+          <svg viewBox="0 0 200 200" role="img" aria-label="Pieza azul dividida en fragmentos">
+            <polygon class="blue-fragment" points="68.6,24.2 131.4,24.2 114.5,64.9 85.5,64.9"/>
+            <polygon class="blue-fragment" points="131.4,24.2 175.8,68.6 135.1,85.5 114.5,64.9"/>
+            <polygon class="blue-fragment" points="175.8,68.6 175.8,131.4 135.1,114.5 135.1,85.5"/>
+            <polygon class="blue-fragment" points="175.8,131.4 131.4,175.8 114.5,135.1 135.1,114.5"/>
+            <polygon class="blue-fragment" points="131.4,175.8 68.6,175.8 85.5,135.1 114.5,135.1"/>
+            <polygon class="blue-fragment" points="68.6,175.8 24.2,131.4 64.9,114.5 85.5,135.1"/>
+            <polygon class="blue-fragment" points="24.2,131.4 24.2,68.6 64.9,85.5 64.9,114.5"/>
+            <polygon class="blue-fragment" points="24.2,68.6 68.6,24.2 85.5,64.9 64.9,85.5"/>
+            <circle class="blue-core" cx="100" cy="100" r="31"/>
+          </svg>
+        </button>
 
-        <div class="yellow-emblem" id="yellowEmblem" aria-hidden="true">
-          <svg viewBox="0 0 122.48 118.66">
-            <path d="M90.44,46c-4.33-1.41-8.65-2.81-12.98-4.22-1.41-4.33-2.81-8.65-4.22-12.98-4.06,2.06-8.11,4.13-12.17,6.19-4.05-2.06-8.11-4.13-12.17-6.19-1.41,4.33-2.81,8.65-4.22,12.98-4.33,1.41-8.65,2.81-12.98,4.22,2.06,4.05,4.13,8.11,6.19,12.16-2.06,4.05-4.13,8.11-6.19,12.16,4.33,1.41,8.65,2.81,12.98,4.22,1.41,4.33,2.81,8.65,4.22,12.98,4.06-2.06,8.11-4.13,12.17-6.19,4.06,2.06,8.11,4.13,12.17,6.19,1.41-4.33,2.81-8.65,4.22-12.98,4.33-1.41,8.65-2.81,12.98-4.22-2.06-4.05-4.13-8.11-6.19-12.16,2.06-4.05,4.13-8.11,6.19-12.16ZM69.62,66.7c-4.73,4.72-12.36,4.72-17.07,0-4.73-4.72-4.73-12.35,0-17.07,4.71-4.72,12.35-4.73,17.07,0,4.72,4.71,4.71,12.35,0,17.07Z"/>
-            <path d="M81.48,8.91h-40.8s-28.85,28.85-28.85,28.85v40.8l28.85,28.85h40.8s28.85-28.85,28.85-28.85v-40.8s-28.85-28.85-28.85-28.85ZM93.75,71.7l-14.44,4.7-4.7,14.44-13.53-6.89-13.53,6.89-4.7-14.44-14.44-4.7,6.89-13.53-6.89-13.53,14.44-4.7,4.7-14.44,13.53,6.89,13.53-6.89,4.7,14.44,14.44,4.7-6.89,13.53,6.89,13.53Z"/>
+        <p class="blue-counter" id="blueCounter"></p>
+      </section>
+
+      <!-- FEEDBACK VERDE -->
+      <section class="green-feedback" id="greenFeedback" aria-hidden="true">
+        <div class="green-rings" aria-hidden="true"></div>
+        <div class="green-nut" aria-hidden="true">
+          <svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg>
+        </div>
+        <p>+1 PUNTO</p>
+      </section>
+
+      <!-- TRANSICIÓN AMARILLA AL COMPLETAR 3 VERDES -->
+      <section class="win-transition" id="winTransition" aria-hidden="true">
+        <div class="win-emblem" aria-hidden="true">
+          <svg viewBox="0 0 122.48 118.66" preserveAspectRatio="xMidYMid meet">
+            <use href="#icon-yellow-piece"></use>
           </svg>
         </div>
-      </div>
 
-      <section class="outro" id="outro" aria-hidden="true">
-        <p>ELIGE TU RUTA</p>
-        <h2>AVANZA · MUÉVETE · ARRIESGA</h2>
-        <div class="outro-actions">
+        <p>3 PUNTOS CONSEGUIDOS</p>
+        <h2>GANANDO</h2>
+
+        <div class="win-actions">
+          <button id="restartButton" type="button">REPETIR</button>
           <a href="index.html">VOLVER AL INICIO</a>
-          <button type="button" id="restartButton">REPETIR RECORRIDO</button>
         </div>
       </section>
     </section>
