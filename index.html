@@ -3,184 +3,265 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Landing de Enrútate, un juego de recorrido, azar y estrategia.">
+  <title>Enrútate — El juego</title>
+
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+  <script src="script.js" defer></script>
 </head>
-<body>
-<div class="scroll-progress">
-    <div class="scroll-fill"></div>
-</div>
-<!-- CURSOR -->
-<div id="cursor"></div>
 
-<!-- HEADER CON TUERCAS -->
-<header class="mini-header">
-  <div class="mini-item">
-    <button class="mini-tuerca" data-target=".movimientos"></button>
-    <span class="mini-label">Movimientos</span>
-  </div>
-  <div class="mini-item">
-    <button class="mini-tuerca" data-target=".ataque"></button>
-    <span class="mini-label">Ataque</span>
-  </div>
-  <div class="mini-item">
-    <button class="mini-tuerca" data-target=".Ganar"></button>
-    <span class="mini-label">Ganar</span>
-  </div>
-</header>
-<!-- HERO -->
-<section class="franja3">
-  <img src="assets/1.gif" alt="Imagen superior" class="hero-top-image">
-  <section class="titulo">
-   
-  <div class="tuerca-wrapper">
-    <button class="tuerca-btn"
-        onclick="window.location.href='exploracion.html'">
-        ◉
-    </button>
-   <p>INTERACTÚA</p>    
-
-</div>
-
-</section>
-</section>
-
-<section class="hero">
-
-
-
-  <div class="hero-content">
-    <a href="#overlay" class="dress-btn">
-      <img src="assets/peon.svg" alt="Peón">
-    </a>
-  </div>
-
-</section>
-
-<!-- PARALLAX -->
-<section class="parallax">
-
-  <div id="overlay" class="overlay"></div>
-  <section class="franja"></section>
-
-  <div class="overlay">
-    <h2>Esto es un juego de azar, avanzar y conseguir puntos</h2>
-  </div>
-
-  <img src="assets/ilustracion1.png" alt="Logo" class="logo">
-
-  <div class="contenido">
-    <h3>Objetivo del Juego</h3>
-    <img src="assets/tuerca.azul.png" alt="tuerca1">
-    <p>Ser el primero en acumular 10 pts. recorriendo el tablero y posicionarse de vuelta en el centro del tablero.</p>
-    <p2>¡Debes tener cuidado de no perder tus puntos antes de regresar al centro!</p2>
-  </div>
-
-  <img src="assets/edad.png" alt="edad" class="edad">
-</section>
-
-<section class="info">
-  <div class="columna-imagen">
-    <img src="assets/armado.gif" alt="preparacion">
-  </div>
-  <div class="columna-texto">
-    <h3>Preparación</h3>
-    <p>Debes separar las cartas por color (rojo, verde y azul) para luego barajar cada mazo por separado. Posicionándolos en su respectivo lugar del tablero. Cada jugador elegirá su pieza representante e insertándola en una casilla amarilla de inicio.</p>
-    <img src="assets/cartas.png" alt="cartas">
-  </div>
-</section>
-
-<section class="avanza">
-  <div class="columna-imagen">
-    <img src="assets/avances.png" alt="avance">
-  </div>
-  <div class="columna-texto">
-    <h3>Tu turno</h3>
-    <p>Cada jugador/a lo largo de la partida, debe avanzar tres pasos en las casillas. Cuando llegues a tu última casilla en cada turno, deberás sacar una carta del mismo color de la casilla en la que terminaste. Considera además que no puedes retroceder y que siempre debes tomar el camino más cercano a la casilla donde partes.</p>
-  </div>
-</section>
-
-<section class="movimientos">
-  <div class="columna-imagen2">
-    <img src="assets/movimiento-especial2.gif" alt="movimientos">
-  </div>
-  <div class="columna-texto2">
-    <h3>¡Muévete!</h3>
-    <img src="assets/mov.pic.png" alt="pictogramas">
-  </div>
-</section>
-
-<section class="ataque">
-  <div class="columna-texto3">
-    <h3>¡Ten cuidado!</h3>
-    <img src="assets/malvada.png" alt="pictogramas2">
-  </div>
-  <div class="columna-imagen3">
-    <img src="assets/rojo.gif" alt="ataque">
-  </div>
-</section>
-
-<section class="Ganar">
-  <div class="columna-imagen4">
-    <img src="assets/verde.gif" alt="ganar">
-  </div>
-  <div class="columna-texto4">
-    <h3>¡Y gana!</h3>
-    <img src="assets/bonificacion.png" alt="pictogramas4">
-  </div>
-</section>
-
-<section class="franja2"></section>
-
-<section class="titulo">
-      <h3>¡Diviértete y Descubre más!</h3>
-</section>
-
-<section class="final">
-  <div class="bttn-col">
-    <a href="exploracion.html" class="bttn1">Interactúa</a>
-  </div>
-  <div class="final-texto">
-    <h3>¡Diviértete y Descubre más!</h3>
-  <section class="scroll-gallery-section">
-
-    <div class="gallery-viewport">
-        <div class="gallery-track">
-
-            <img src="assets/imagen.comercial.png" alt="">
-            <img src="assets/1.img.png" alt="">
-            <img src="assets/2.img.png" alt="">
-            <img src="assets/3.img.png" alt="">
-            <img src="assets/4.img.png" alt="">
-
-        </div>
+<body class="intro-active">
+  <!-- PANTALLA INICIAL: transición escrita letra a letra -->
+  <div class="intro-screen" id="intro-screen" aria-label="Presentación de Enrútate">
+    <div class="intro-ring" aria-hidden="true">
+      <span></span><span></span><span></span>
     </div>
-    
+    <p class="intro-kicker">Todo recorrido comienza aquí</p>
+    <h1 class="intro-word" id="intro-word" aria-label="Enrútate">ENRÚTATE</h1>
+    <p class="intro-hint">Preparando el tablero…</p>
+  </div>
+
+  <div class="scroll-progress" aria-hidden="true">
+    <div class="scroll-fill"></div>
+  </div>
+
+  <div id="cursor" aria-hidden="true"></div>
+
+  <!-- HEADER INTERACTIVO -->
+  <header class="site-header">
+    <a class="site-brand" href="#inicio" aria-label="Volver al inicio">ENRÚTATE</a>
+
+    <nav class="mini-header" aria-label="Navegación principal">
+      <div class="mini-item">
+        <button class="mini-tuerca" type="button" data-target=".movimientos" aria-label="Ir a movimientos"></button>
+        <span class="mini-label">Movimientos</span>
+      </div>
+      <div class="mini-item">
+        <button class="mini-tuerca" type="button" data-target=".ataque" aria-label="Ir a ataque"></button>
+        <span class="mini-label">Ataque</span>
+      </div>
+      <div class="mini-item">
+        <button class="mini-tuerca" type="button" data-target=".Ganar" aria-label="Ir a ganar"></button>
+        <span class="mini-label">Ganar</span>
+      </div>
+    </nav>
+  </header>
+
+  <a class="tuerca-wrapper" href="exploracion.html" aria-label="Ir a la experimentación digital">
+    <span class="tuerca-btn" aria-hidden="true">◉</span>
+    <span>INTERACTÚA</span>
+  </a>
+
+  <main class="page-shell">
+    <!-- INICIO YA DISEÑADO, REORDENADO DENTRO DE UN CONTENEDOR -->
+    <section class="hero" id="inicio">
+      <div class="hero-card">
+        <div class="hero-copy">
+          <p class="eyebrow">Juego de recorrido · azar · estrategia</p>
+          <h2>Construye tu ruta, toma decisiones y vuelve al centro</h2>
+          
+          <a href="#objetivo" class="hero-link">Descubrir cómo se juega <span>↓</span></a>
+        </div>
+
+        <div class="hero-visual" aria-label="Animación principal de Enrútate">
+          <div class="hero-gif" role="img" aria-label="Animación del tablero de Enrútate"></div>
+          <a href="#objetivo" class="dress-btn" aria-label="Avanzar hacia las reglas">
+            <img src="assets/peon.svg" alt="Peón del juego">
+          </a> 
+        </div>
+      </div>
+    </section>
+
+    <!-- OBJETIVO / PREPARACIÓN / TU TURNO: CONTENEDOR GIRATORIO -->
   
-  </div>
-  <div class="bttn-col">
-    <a href="https://wiki.ead.pucv.cl/Enr%C3%BAtate" class="bttn3">Más información</a>
-  </div>
-</section>
+    <section class="rules-scroll" aria-label="Reglas principales del juego" id="objetivo">
+      <div class="rules-stage">
+        <aside class="disc-nav" aria-label="Etapas de las reglas">
+          <div class="disc-window">
+            <div class="rules-disc" aria-hidden="true">
+              <span class="disc-line"></span>
+              <span class="disc-node node-1"></span>
+              <span class="disc-node node-2"></span>
+              <span class="disc-node node-3"></span>
+            </div>
+          </div>
 
+          <div class="disc-steps">
+            <button class="disc-step is-active" type="button" data-step="0">
+              <span>01</span> Objetivo
+            </button>
+            <button class="disc-step" type="button" data-step="1">
+              <span>02</span> Preparación
+            </button>
+            <button class="disc-step" type="button" data-step="2">
+              <span>03</span> Tu turno
+            </button>
+          </div>
+        </aside>
+
+        <div class="rule-card-shell">
+          <div class="rule-counter" aria-live="polite">
+            <span id="rule-current">01</span><span>/03</span>
+          </div>
+
+          <article class="rule-card is-active" data-step="0">
+            <div class="rule-media">
+              <img src="assets/ilustracion1.png" alt="Ilustración del tablero de Enrútate">
+            </div>
+            <div class="rule-copy">
+              <p class="eyebrow">El centro es la meta</p>
+              <h3>Objetivo del juego</h3>
+              <p>
+                Sé la primera persona en acumular 10 puntos mientras recorres el tablero
+                y regresa al centro para ganar.
+              </p>
+              <p class="rule-emphasis">
+                Ten cuidado: puedes perder puntos antes de completar el recorrido.
+              </p>
+              <img src="assets/edad.png" alt="Información de edad, jugadores y duración" class="rule-extra">
+            </div>
+          </article>
+
+          <article class="rule-card" data-step="1" aria-hidden="true">
+            <div class="rule-media media-preparacion">
+  <img src="assets/armado.gif" alt="Animación de la preparación del tablero">
+  <img src="assets/armado2.gif" alt="Animación de la preparación del tablero">
 </div>
-<section class="info-final">
-  <div class="columna">
-    <h3>Información sobre el proyecto</h3>
-    <p>Este sitio fue diseñado en github</p>
-  </div>
-  <div class="columna">
-    <h3>Contacto</h3>
-    <p>Antonia Gonzalez</p>
-  </div>
-  <div class="columna">
-    <h3>Taller de Diseño de Interacción</h3>
-    <p>wiki casipea</p>
-  </div>
-</section>
+            <div class="rule-copy">
+              <p class="eyebrow">Ordena las piezas</p>
+              <h3>Preparación</h3> 
+              <img src="assets/cartas.png" alt="Mazos de cartas del juego" class="rule-extra cards-extra">
+              <p>
+                Arma el tablero, separa las cartas, Baraja cada mazo por separado
+                y ubícalo en su espacio correspondiente del tablero.
+              </p>
+              <p>
+                Cada jugador elige un peón y lo posiciona en una casilla amarilla de inicio.
+              </p>
+             
+            </div>
+          </article>
 
+          <article class="rule-card" data-step="2" aria-hidden="true">
+            <div class="rule-media">
+              <img src="assets/avance2.gif" alt="Ejemplo de avance de un peón por el tablero">
+            </div>
+            <div class="rule-copy">
+              <p class="eyebrow">Avanza por la ruta</p>
+              <h3>Tu turno</h3>
+              <p>
+                Avanza tres casillas. Al terminar, toma una carta del mismo color de la
+                casilla en la que quedaste.
+              </p>
+              <p class="rule-emphasis">
+                No puedes retroceder: debes elegir el camino más cercano desde tu punto de partida.
+              </p>
+            </div>
+          </article>
+        </div>
 
-<script src="script.js"></script>
+        <p class="scroll-cue"><span></span> Sigue girando</p>
+      </div>
+    </section>
+
+    <!-- GALERÍA INTERACTIVA: ATAQUE / MOVIMIENTO / GANAR -->
+    <section class="action-gallery-section" id="acciones">
+      <div class="action-gallery-heading">
+        <p class="section-number">02</p>
+        <div>
+          <p class="eyebrow">Las cartas cambian el recorrido</p>
+          <h2>Explora cada tipo de movimiento</h2>
+        </div>
+      </div>
+
+      <div class="action-gallery" aria-label="Galería de cartas y acciones del juego">
+        <article class="action-card ataque is-left" id="ataque" data-action-card tabindex="0">
+          <div class="action-media">
+            <img src="assets/rojo.gif" alt="Animación de una carta de ataque">
+          </div>
+          <div class="action-copy">
+            <p class="eyebrow">Cartas rojas</p>
+            <h2>¡Ten cuidado!</h2>
+            <p>
+              Las cartas de ataque ponen en riesgo los puntos obtenidos y crean obstáculos inesperados.
+            </p>
+        
+          </div>
+        </article>
+
+        <article class="action-card movimientos is-expanded is-center" id="movimientos" data-action-card tabindex="0">
+          <div class="action-media">
+            <img src="assets/tablero.gif" alt="Animación de movimientos especiales">
+          </div>
+          <div class="action-copy">
+            <p class="eyebrow">Cartas azules</p>
+            <h2>¡Muévete!</h2>
+            <p>
+              Los movimientos especiales permiten girar piezas, modificar trayectorias y cambiar la relación entre los jugadores y el tablero.
+            </p>
+        
+          </div>
+        </article>
+
+        <article class="action-card Ganar is-right" id="ganar" data-action-card tabindex="0">
+          <div class="action-media">
+            <img src="assets/verde.gif" alt="Animación de una carta de bonificación">
+          </div>
+          <div class="action-copy">
+            <p class="eyebrow">Cartas verdes</p>
+            <h2>¡Y gana!</h2>
+            <p>
+              Las bonificaciones ayudan a acercarte a los 10 puntos, pero todavía debes completar el regreso al centro.
+            </p>
+        
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="final" id="descubre">
+      <div class="final-heading">
+        <p class="section-number">03</p>
+        <div>
+          <p class="eyebrow">El juego continúa</p>
+          <h2>Diviértete y descubre más</h2>
+        </div>
+      </div>
+
+      <div class="scroll-gallery-section">
+        <div class="gallery-stage">
+          <div class="gallery-track">
+            <figure><img src="assets/imagen.comercial.png" alt="Imagen comercial de Enrútate"></figure>
+            <figure><img src="assets/1.img.png" alt="Detalle visual 1 de Enrútate"></figure>
+            <figure><img src="assets/2.img.png" alt="Detalle visual 2 de Enrútate"></figure>
+            <figure><img src="assets/3.img.png" alt="Detalle visual 3 de Enrútate"></figure>
+            <figure><img src="assets/4.img.png" alt="Detalle visual 4 de Enrútate"></figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="final-actions">
+        <a href="exploracion.html" class="bttn1">Entrar a la experimentación</a>
+        <a href="https://wiki.ead.pucv.cl/Enr%C3%BAtate" class="bttn3" target="_blank" rel="noreferrer">Ver proceso en la wiki</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="info-final">
+    <div class="columna">
+      <h3>Información del proyecto</h3>
+      <p>Landing y experimentación digital de Enrútate Diseñado en Visual Estudio Code y Github.</p>
+    </div>
+    <div class="columna">
+      <h3>Estudiante</h3>
+      <p>Antonia Gonzalez</p>
+    </div>
+    <div class="columna">
+      <h3>Taller</h3>
+      <p>Taller de Diseño de Interacción 2026 · e[ad] PUCV</p>
+    </div>
+  </footer>
 </body>
 </html>
