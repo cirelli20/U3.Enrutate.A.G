@@ -22,11 +22,6 @@
     <h1 class="intro-word" id="intro-word" aria-label="Enrútate">ENRÚTATE</h1>
     <p class="intro-hint">Preparando el tablero…</p>
   </div>
-
-  <div class="scroll-progress" aria-hidden="true">
-    <div class="scroll-fill"></div>
-  </div>
-
   <div id="cursor" aria-hidden="true"></div>
 
   <!-- HEADER INTERACTIVO -->
@@ -34,18 +29,15 @@
     <a class="site-brand" href="#inicio" aria-label="Volver al inicio">ENRÚTATE</a>
 
     <nav class="mini-header" aria-label="Navegación principal">
-      <div class="mini-item">
-        <button class="mini-tuerca" type="button" data-target=".movimientos" aria-label="Ir a movimientos"></button>
-        <span class="mini-label">Movimientos</span>
-      </div>
-      <div class="mini-item">
-        <button class="mini-tuerca" type="button" data-target=".ataque" aria-label="Ir a ataque"></button>
-        <span class="mini-label">Ataque</span>
-      </div>
-      <div class="mini-item">
-        <button class="mini-tuerca" type="button" data-target=".Ganar" aria-label="Ir a ganar"></button>
-        <span class="mini-label">Ganar</span>
-      </div>
+      <button class="header-action header-action--movement" type="button" data-target=".movimientos">
+        Movimiento
+      </button>
+      <button class="header-action header-action--attack" type="button" data-target=".ataque">
+        Ataque
+      </button>
+      <button class="header-action header-action--win" type="button" data-target=".Ganar">
+        Ganar
+      </button>
     </nav>
   </header>
 
@@ -74,7 +66,7 @@
       </div>
     </section>
 
-    <!-- OBJETIVO / PREPARACIÓN / TU TURNO: CONTENEDOR GIRATORIO -->
+    <!-- OBJETIVO / PREPARACIÓN / TU TURNO: TARJETAS INDEPENDIENTES -->
   
     <section class="rules-scroll" aria-label="Reglas principales del juego" id="objetivo">
       <div class="rules-stage">
@@ -101,12 +93,9 @@
           </div>
         </aside>
 
-        <div class="rule-card-shell">
-          <div class="rule-counter" aria-live="polite">
-            <span id="rule-current">01</span><span>/03</span>
-          </div>
+        <div class="rule-card-list" aria-label="Tarjetas de reglas">
 
-          <article class="rule-card is-active" data-step="0">
+          <article class="rule-card is-active" data-step="0" id="regla-objetivo">
             <div class="rule-media">
               <img src="assets/ilustracion1.png" alt="Ilustración del tablero de Enrútate">
             </div>
@@ -124,7 +113,7 @@
             </div>
           </article>
 
-          <article class="rule-card" data-step="1" aria-hidden="true">
+          <article class="rule-card" data-step="1" id="regla-preparacion">
             <div class="rule-media media-preparacion">
   <img src="assets/armado.gif" alt="Animación de la preparación del tablero">
   <img src="assets/armado2.gif" alt="Animación de la preparación del tablero">
@@ -144,7 +133,7 @@
             </div>
           </article>
 
-          <article class="rule-card" data-step="2" aria-hidden="true">
+          <article class="rule-card" data-step="2" id="regla-turno">
             <div class="rule-media">
               <img src="assets/avance2.gif" alt="Ejemplo de avance de un peón por el tablero">
             </div>
@@ -162,7 +151,7 @@
           </article>
         </div>
 
-        <p class="scroll-cue"><span></span> Sigue girando</p>
+        <p class="scroll-cue"><span></span> Sigue bajando</p>
       </div>
     </section>
 
@@ -220,10 +209,36 @@
         </article>
       </div>
     </section>
+<section class="concept-bridge" id="fundamento">
+  <div class="concept-bridge-number">03</div>
 
+  <div class="concept-bridge-content">
+    <p class="eyebrow">Del juego físico a lo digital</p>
+
+    <h2>Del tablero a la exploración digital</h2>
+
+    <p>
+      En <strong>Enrútate</strong>, cada casilla esconde un efecto diferente
+      que se descubre al avanzar por el tablero. Cada movimiento implica
+      enfrentarse a algo desconocido, una casilla puede entregar un beneficio,
+      generar una dificultad o modificar el recorrido del jugador.
+    </p>
+
+    <p>
+      La exploración digital traslada esta experiencia a la navegación.
+      Avanzar no consiste solamente en pasar de una sección a otra, sino en
+      tomar decisiones, probar distintas piezas y descubrir qué sucede después
+      de cada interacción.
+    </p>
+
+    <a href="exploracion.html" class="concept-bridge-link">
+      Comenzar la exploración <span>→</span>
+    </a>
+  </div>
+</section>
     <section class="final" id="descubre">
       <div class="final-heading">
-        <p class="section-number">03</p>
+        <p class="section-number">04</p>
         <div>
           <p class="eyebrow">El juego continúa</p>
           <h2>Diviértete y descubre más</h2>

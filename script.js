@@ -95,22 +95,27 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const positionActionCards = (activeCard) => {
     if (!activeCard || !actionCards.length) return;
+
     const activeIndex = actionCards.indexOf(activeCard);
+    if (activeIndex === -1) return;
+
     const total = actionCards.length;
+    const leftIndex = (activeIndex - 1 + total) % total;
+    const rightIndex = (activeIndex + 1) % total;
 
-    actionCards.forEach((item, index) => {
+    actionCards.forEach((item) => {
       item.classList.remove("is-expanded", "is-left", "is-center", "is-right");
-
-      const offset = (index - activeIndex + total) % total;
-
-      if (offset === 0) {
-        item.classList.add("is-expanded", "is-center");
-      } else if (offset === 1) {
-        item.classList.add("is-right");
-      } else {
-        item.classList.add("is-left");
-      }
     });
+
+    actionCards[activeIndex].classList.add("is-expanded", "is-center");
+
+    if (total > 1) {
+      actionCards[leftIndex].classList.add("is-left");
+    }
+
+    if (total > 2) {
+      actionCards[rightIndex].classList.add("is-right");
+    }
   };
 
   const expandActionCard = (card) => {
@@ -120,49 +125,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
   expandActionCard(preferredAction);
 
-  // Usamos pointermove en el contenedor, en vez de mouseenter en cada tarjeta.
-  // Así evitamos el bucle que se producía cuando las tarjetas se desplazaban
-  // debajo de un cursor que estaba quieto.
-  let hoveredAction = null;
-
+  // La posición de las tarjetas cambia únicamente al hacer clic.
+  // El hover puede conservar el zoom visual definido en CSS,
+  // pero ya no modifica is-left, is-center ni is-right.
   actionCards.forEach((card) => {
-    card.addEventListener("focusin", () => {
-      hoveredAction = card;
-      expandActionCard(card);
-    });
-
     card.addEventListener("click", () => {
       preferredAction = card;
-      hoveredAction = card;
       expandActionCard(card);
     });
   });
 
-  if (actionGallery) {
-    actionGallery.addEventListener("pointermove", (event) => {
-      if (event.pointerType === "touch") return;
-
-      const card = event.target.closest("[data-action-card]");
-      if (!card || card === hoveredAction) return;
-
-      hoveredAction = card;
-      expandActionCard(card);
-    });
-
-    actionGallery.addEventListener("pointerleave", () => {
-      hoveredAction = null;
-      expandActionCard(preferredAction);
-    });
-
-    actionGallery.addEventListener("focusout", (event) => {
-      if (!actionGallery.contains(event.relatedTarget)) {
-        hoveredAction = null;
-        expandActionCard(preferredAction);
-      }
-    });
-  }
-
-  document.querySelectorAll(".mini-tuerca").forEach((button) => {
+  document.querySelectorAll(".header-action").forEach((button) => {
     button.addEventListener("click", () => {
       const target = document.querySelector(button.dataset.target);
       if (!target) return;
@@ -181,115 +154,78 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* ─────────────────────────────
-     PROGRESO GENERAL
-  ───────────────────────────── */
-  const scrollFill = document.querySelector(".scroll-fill");
-
-  const updateProgress = () => {
-    if (!scrollFill) return;
-    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0;
-    scrollFill.style.height = `${Math.min(100, Math.max(0, progress))}%`;
-  };
-
-  window.addEventListener("scroll", updateProgress, { passive: true });
-  window.addEventListener("resize", updateProgress);
-  updateProgress();
 
   /* ─────────────────────────────
-     REGLAS: DISCO Y CONTENEDOR QUE CAMBIA
+     REGLAS: TARJETAS INDEPENDIENTES + ÍNDICE LATERAL
   ───────────────────────────── */
-  const rulesScroll = document.querySelector(".rules-scroll");
   const ruleCards = [...document.querySelectorAll(".rule-card")];
   const discSteps = [...document.querySelectorAll(".disc-step")];
-  const ruleCurrent = document.getElementById("rule-current");
-  const rulesDisc = document.querySelector(".rules-disc");
   let activeRule = 0;
 
-  const setActiveRule = (nextIndex, animate = true) => {
+  const setActiveRule = (nextIndex) => {
     const index = Math.max(0, Math.min(ruleCards.length - 1, nextIndex));
-    if (!ruleCards[index] || (index === activeRule && ruleCards[index].classList.contains("is-active"))) {
-      return;
-    }
-
-    const previousCard = ruleCards[activeRule];
-    const nextCard = ruleCards[index];
-    const direction = index >= activeRule ? 1 : -1;
+    activeRule = index;
 
     ruleCards.forEach((card, cardIndex) => {
-      const isActive = cardIndex === index;
-      card.classList.toggle("is-active", isActive);
-      card.setAttribute("aria-hidden", String(!isActive));
+      card.classList.toggle("is-active", cardIndex === index);
     });
 
     discSteps.forEach((step, stepIndex) => {
       step.classList.toggle("is-active", stepIndex === index);
+      step.setAttribute("aria-current", stepIndex === index ? "step" : "false");
     });
-
-    if (ruleCurrent) ruleCurrent.textContent = String(index + 1).padStart(2, "0");
-
-    if (hasGSAP && animate) {
-      if (previousCard && previousCard !== nextCard) {
-        gsap.fromTo(previousCard,
-          { autoAlpha: 1, rotateY: 0, xPercent: 0, scale: 1 },
-          { autoAlpha: 0, rotateY: 16 * direction, xPercent: -8 * direction, scale: 0.96, duration: 0.42, ease: "power2.in" }
-        );
-      }
-
-      gsap.fromTo(nextCard,
-        { autoAlpha: 0, rotateY: -20 * direction, xPercent: 10 * direction, scale: 0.94 },
-        { autoAlpha: 1, rotateY: 0, xPercent: 0, scale: 1, duration: 0.7, ease: "power3.out", overwrite: true }
-      );
-
-      if (rulesDisc) {
-        gsap.to(rulesDisc, {
-          rotation: index * 120,
-          duration: 0.8,
-          ease: "back.out(1.35)",
-          overwrite: true
-        });
-      }
-    } else if (rulesDisc) {
-      rulesDisc.style.transform = `rotate(${index * 120}deg)`;
-    }
-
-    activeRule = index;
   };
 
-  // Estado inicial explícito.
-  activeRule = -1;
-  setActiveRule(0, false);
-
-  if (rulesScroll && hasGSAP && hasScrollTrigger) {
-    ScrollTrigger.create({
-      trigger: rulesScroll,
-      start: "top top",
-      end: "bottom bottom",
-      onUpdate: (self) => {
-        const index = Math.min(ruleCards.length - 1, Math.floor(self.progress * ruleCards.length));
-        if (index !== activeRule) setActiveRule(index, true);
-      }
-    });
-  } else if (rulesScroll) {
-    const updateRulesWithoutGSAP = () => {
-      const rect = rulesScroll.getBoundingClientRect();
-      const travel = rulesScroll.offsetHeight - window.innerHeight;
-      const progress = travel > 0 ? Math.min(1, Math.max(0, -rect.top / travel)) : 0;
-      const index = Math.min(ruleCards.length - 1, Math.floor(progress * ruleCards.length));
-      if (index !== activeRule) setActiveRule(index, false);
-    };
-    window.addEventListener("scroll", updateRulesWithoutGSAP, { passive: true });
-  }
+  setActiveRule(0);
 
   discSteps.forEach((step, index) => {
     step.addEventListener("click", () => {
-      if (!rulesScroll) return;
-      const travel = rulesScroll.offsetHeight - window.innerHeight;
-      const targetY = rulesScroll.offsetTop + (travel * index) / Math.max(1, ruleCards.length - 1);
-      window.scrollTo({ top: targetY, behavior: "smooth" });
+      const targetCard = ruleCards[index];
+      if (!targetCard) return;
+      setActiveRule(index);
+      targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
     });
   });
+
+  // El índice cambia según la tarjeta que se encuentre en el centro de la pantalla.
+  if ("IntersectionObserver" in window) {
+    const ruleObserver = new IntersectionObserver((entries) => {
+      const visibleEntries = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+      if (!visibleEntries.length) return;
+      const index = ruleCards.indexOf(visibleEntries[0].target);
+      if (index >= 0 && index !== activeRule) setActiveRule(index);
+    }, {
+      root: null,
+      rootMargin: "-24% 0px -42% 0px",
+      threshold: [0.12, 0.3, 0.5, 0.7]
+    });
+
+    ruleCards.forEach((card) => ruleObserver.observe(card));
+  } else {
+    const updateActiveRule = () => {
+      const viewportCenter = window.innerHeight * 0.48;
+      let nearestIndex = 0;
+      let nearestDistance = Infinity;
+
+      ruleCards.forEach((card, index) => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.top + rect.height / 2;
+        const distance = Math.abs(cardCenter - viewportCenter);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestIndex = index;
+        }
+      });
+
+      if (nearestIndex !== activeRule) setActiveRule(nearestIndex);
+    };
+
+    window.addEventListener("scroll", updateActiveRule, { passive: true });
+    updateActiveRule();
+  }
 
   /* ─────────────────────────────
      ANIMACIONES DE ENTRADA
@@ -304,19 +240,22 @@ window.addEventListener("DOMContentLoaded", () => {
       delay: 0.2
     });
 
+    // IMPORTANTE: no animamos transform, y ni rotation en las tarjetas.
+    // Esas propiedades las usa el CSS para posicionar is-left, is-center e is-right.
     gsap.utils.toArray(".action-card").forEach((card) => {
-      gsap.from(card, {
-        y: 90,
-        rotation: 1.4,
-        opacity: 0,
-        duration: 1,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: card,
-          start: "top 78%",
-          toggleActions: "play none none reverse"
+      gsap.fromTo(card,
+        { opacity: 0 },
+        {
+          opacity: 1,
+          duration: 1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".action-gallery",
+            start: "top 78%",
+            toggleActions: "play none none reverse"
+          }
         }
-      });
+      );
 
       const media = card.querySelector(".action-media img");
       if (media) {
@@ -326,7 +265,7 @@ window.addEventListener("DOMContentLoaded", () => {
           duration: 1.15,
           ease: "back.out(1.35)",
           scrollTrigger: {
-            trigger: card,
+            trigger: ".action-gallery",
             start: "top 72%",
             toggleActions: "play none none reverse"
           }
