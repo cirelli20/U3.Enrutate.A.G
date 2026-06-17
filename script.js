@@ -295,11 +295,43 @@ window.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("load", updateGallery);
     updateGallery();
   }
+/* VIDEO COMERCIAL DE YOUTUBE */
+const youtubePlayer = document.querySelector(".youtube-player");
 
+if (youtubePlayer) {
+  const playYoutubeVideo = () => {
+    if (youtubePlayer.classList.contains("is-playing")) return;
+
+    const videoId = youtubePlayer.dataset.videoId;
+    const iframe = document.createElement("iframe");
+
+    iframe.src =
+      `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&controls=1`;
+
+    iframe.title = "Video comercial de Enrútate";
+    iframe.allow =
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    iframe.allowFullscreen = true;
+
+    youtubePlayer.classList.add("is-playing");
+    youtubePlayer.innerHTML = "";
+    youtubePlayer.appendChild(iframe);
+  };
+
+  youtubePlayer.addEventListener("click", playYoutubeVideo);
+
+  youtubePlayer.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      playYoutubeVideo();
+    }
+  });
+}
   /* ─────────────────────────────
      AJUSTES AL CARGAR RECURSOS
   ───────────────────────────── */
   window.addEventListener("load", () => {
     if (hasGSAP && hasScrollTrigger) ScrollTrigger.refresh();
   });
+  
 });

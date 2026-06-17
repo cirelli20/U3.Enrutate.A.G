@@ -1820,24 +1820,31 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   FONDO ANIMADO INTEGRADO — HALOS GIRATORIOS ENRÚTATE
-   Integrado directamente en exploracion.css.
+   FONDO INICIAL — ACRÍLICOS TRANSLÚCIDOS
+   Reemplaza únicamente el fondo anterior. Las transiciones,
+   minijuegos y demás elementos conservan sus estilos originales.
 ═══════════════════════════════════════════════════════════════ */
 
 .scene {
   background:
-    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, .96) 0 14%, transparent 43%),
-    linear-gradient(135deg, #ffffff 0%, #eef8fc 48%, #ffffff 100%);
+    radial-gradient(circle at 48% 18%, rgba(255, 221, 6, .08), transparent 24%),
+    radial-gradient(circle at 72% 58%, rgba(0, 142, 184, .07), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #fbfbf8 100%);
 }
 
-/* Se reutiliza la capa que ya controla el movimiento del fondo. */
+/* Se reutiliza la capa que ya recibe el movimiento suave del cursor. */
 .background-pattern {
   position: absolute;
   z-index: 0;
-  inset: -24vmax;
+  inset: 0;
   overflow: hidden;
-  opacity: .92;
-  background: transparent;
+  opacity: .98;
+  pointer-events: none;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 22% 12%, rgba(255,255,255,.96), transparent 30%),
+    radial-gradient(circle at 73% 22%, rgba(255,255,255,.72), transparent 34%),
+    radial-gradient(circle at 55% 88%, rgba(255,255,255,.48), transparent 36%);
   transform:
     translate3d(
       var(--pointer-x, 0px),
@@ -1845,129 +1852,288 @@ body {
       0
     )
     rotate(var(--bg-parallax-rotate, 0deg))
-    scale(var(--bg-parallax-scale, 1.08));
+    scale(var(--bg-parallax-scale, 1.02));
   transform-origin: center;
   will-change: transform, opacity;
-  pointer-events: none;
 }
 
-/* Halos principales: azul, verde, rojo y amarillo. */
+/* Luz difusa sobre las láminas. */
 .background-pattern::before {
+  position: absolute;
+  z-index: 20;
+  inset: -10%;
+  content: "";
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255,255,255,.72), transparent 28%),
+    radial-gradient(circle at 72% 22%, rgba(255,255,255,.52), transparent 32%),
+    radial-gradient(circle at 53% 86%, rgba(255,255,255,.38), transparent 36%);
+  filter: blur(24px);
+  mix-blend-mode: screen;
+}
+
+/* Sombra ambiental muy suave bajo la composición. */
+.background-pattern::after {
+  position: absolute;
+  z-index: -1;
+  left: 8%;
+  right: 8%;
+  bottom: 2%;
+  height: 15%;
+  content: "";
+  pointer-events: none;
+  border-radius: 50%;
+  background: rgba(12, 25, 31, .065);
+  filter: blur(45px);
+  transform: scaleX(.9);
+}
+
+/* Lámina base. */
+.acrylic-sheet {
+  position: absolute;
+  display: block;
+  transform-origin: center;
+  will-change: transform, translate;
+  border: 1px solid rgba(255,255,255,.24);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.13),
+    0 12px 25px rgba(20,30,35,.045);
+  backdrop-filter: blur(1.5px) saturate(125%);
+  -webkit-backdrop-filter: blur(1.5px) saturate(125%);
+  mix-blend-mode: multiply;
+}
+
+/* Reflejo diagonal que simula la superficie del acrílico. */
+.acrylic-sheet::before {
   position: absolute;
   inset: 0;
   content: "";
+  pointer-events: none;
   background:
-    radial-gradient(circle at 37% 32%,
-      transparent 0 13%,
-      rgba(0, 142, 184, .08) 21%,
-      rgba(0, 142, 184, .70) 35%,
-      rgba(0, 142, 184, .16) 48%,
-      transparent 59%),
-    radial-gradient(circle at 60% 61%,
-      transparent 0 10%,
-      rgba(0, 142, 184, .06) 19%,
-      rgba(0, 142, 184, .38) 31%,
-      rgba(0, 142, 184, .10) 44%,
-      transparent 55%),
-    radial-gradient(circle at 82% 19%,
-      transparent 0 7%,
-      rgba(105, 170, 45, .05) 13%,
-      rgba(105, 170, 45, .62) 22%,
-      rgba(105, 170, 45, .09) 32%,
-      transparent 41%),
-    radial-gradient(circle at 13% 82%,
-      transparent 0 8%,
-      rgba(214, 39, 22, .04) 15%,
-      rgba(214, 39, 22, .52) 25%,
-      rgba(214, 39, 22, .08) 36%,
-      transparent 46%),
-    radial-gradient(circle at 83% 82%,
-      transparent 0 7%,
-      rgba(255, 221, 6, .04) 14%,
-      rgba(255, 221, 6, .58) 24%,
-      rgba(255, 221, 6, .08) 35%,
-      transparent 45%);
-  filter: blur(30px);
-  transform-origin: center;
-  animation: fondoGiroPrincipal 38s linear infinite;
+    linear-gradient(
+      105deg,
+      rgba(255,255,255,.34) 0%,
+      rgba(255,255,255,.08) 20%,
+      transparent 43%,
+      rgba(255,255,255,.15) 74%,
+      transparent 100%
+    );
+  mix-blend-mode: screen;
 }
 
-/* Manchas secundarias para que el movimiento no se vea rígido. */
-.background-pattern::after {
+/* Canto claro de cada lámina; no crea líneas externas decorativas. */
+.acrylic-sheet::after {
   position: absolute;
-  inset: 7%;
+  top: 0;
+  right: 0;
+  width: 2px;
+  height: 100%;
   content: "";
-  opacity: .42;
-  background:
-    radial-gradient(circle at 18% 25%, rgba(0, 142, 184, .34), transparent 29%),
-    radial-gradient(circle at 69% 27%, rgba(0, 142, 184, .24), transparent 25%),
-    radial-gradient(circle at 50% 84%, rgba(0, 142, 184, .20), transparent 22%);
-  filter: blur(58px);
-  animation: fondoDeriva 25s ease-in-out infinite alternate;
+  pointer-events: none;
+  background: rgba(255,255,255,.55);
+  box-shadow: -1px 0 0 rgba(0,0,0,.035);
 }
 
-/* Se eliminan los brillos anteriores para no competir con el fondo nuevo. */
+/* AMARILLO */
+.acrylic-yellow-1 {
+  left: -2vw;
+  top: 11vh;
+  width: 18vw;
+  height: 56vh;
+  background:
+    linear-gradient(150deg, rgba(255,255,255,.28), transparent 38%),
+    rgba(255,221,6,.36);
+  clip-path: polygon(0 0, 92% 0, 92% 100%, 0 88%);
+  animation: acrylicFloatA 15s ease-in-out infinite alternate;
+}
+
+.acrylic-yellow-2 {
+  left: 39vw;
+  top: 13vh;
+  width: 25vw;
+  height: 47vh;
+  background: rgba(255,221,6,.14);
+  clip-path: polygon(10% 0, 100% 7%, 91% 100%, 0 91%);
+  animation: acrylicFloatB 19s ease-in-out infinite alternate;
+}
+
+/* ROJO */
+.acrylic-red-1 {
+  left: 7vw;
+  top: 21vh;
+  width: 32vw;
+  height: 59vh;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.16), transparent 38%),
+    rgba(214,39,22,.24);
+  clip-path: polygon(10% 0, 100% 29%, 100% 86%, 5% 100%, 0 22%);
+  animation: acrylicFloatC 18s ease-in-out infinite alternate;
+}
+
+.acrylic-red-2 {
+  left: -4vw;
+  top: 42vh;
+  width: 25vw;
+  height: 33vh;
+  background: rgba(214,39,22,.24);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 8% 100%);
+  animation: acrylicFloatB 17s ease-in-out infinite alternate-reverse;
+}
+
+/* AZUL */
+.acrylic-blue-1 {
+  right: 7vw;
+  top: 21vh;
+  width: 34vw;
+  height: 63vh;
+  background:
+    linear-gradient(120deg, rgba(255,255,255,.28), transparent 42%),
+    rgba(0,142,184,.24);
+  clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 91%);
+  animation: acrylicFloatA 20s ease-in-out infinite alternate-reverse;
+}
+
+.acrylic-blue-2 {
+  left: 27vw;
+  top: 14vh;
+  width: 25vw;
+  height: 35vh;
+  background: rgba(0,142,184,.14);
+  clip-path: polygon(0 0, 100% 6%, 100% 100%, 0 100%);
+  animation: acrylicFloatC 16s ease-in-out infinite alternate;
+}
+
+.acrylic-blue-3 {
+  right: -5vw;
+  bottom: 5vh;
+  width: 22vw;
+  height: 37vh;
+  background: rgba(0,142,184,.14);
+  clip-path: polygon(8% 0, 100% 7%, 100% 100%, 0 94%);
+  animation: acrylicFloatB 21s ease-in-out infinite alternate;
+}
+
+/* VERDE */
+.acrylic-green-1 {
+  left: 47vw;
+  top: 41vh;
+  width: 24vw;
+  height: 38vh;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.23), transparent 48%),
+    rgba(105,170,45,.24);
+  clip-path: polygon(3% 0, 92% 0, 100% 91%, 0 100%);
+  animation: acrylicFloatC 19s ease-in-out infinite alternate-reverse;
+}
+
+.acrylic-green-2 {
+  left: -2vw;
+  bottom: 4vh;
+  width: 17vw;
+  height: 27vh;
+  background: rgba(105,170,45,.14);
+  clip-path: polygon(0 0, 100% 6%, 92% 100%, 0 100%);
+  animation: acrylicFloatA 17s ease-in-out infinite alternate;
+}
+
+/* SUPERPOSICIONES */
+.acrylic-red-blue {
+  left: 24vw;
+  top: 31vh;
+  width: 24vw;
+  height: 28vh;
+  background:
+    linear-gradient(135deg, rgba(214,39,22,.26), rgba(0,142,184,.20));
+  clip-path: polygon(0 0, 100% 8%, 96% 100%, 0 90%);
+  animation: acrylicFloatB 14s ease-in-out infinite alternate;
+}
+
+.acrylic-yellow-green {
+  left: 49vw;
+  top: 34vh;
+  width: 20vw;
+  height: 31vh;
+  background:
+    linear-gradient(145deg, rgba(255,221,6,.18), rgba(105,170,45,.18));
+  clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 91%);
+  animation: acrylicFloatA 22s ease-in-out infinite alternate-reverse;
+}
+
+.acrylic-small-blue {
+  right: 27vw;
+  top: 39vh;
+  width: 6vw;
+  height: 18vh;
+  background: rgba(0,142,184,.25);
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 8% 100%);
+  animation: acrylicFloatC 13s ease-in-out infinite alternate;
+}
+
+.acrylic-small-red {
+  left: 1vw;
+  bottom: 0;
+  width: 12vw;
+  height: 23vh;
+  background: rgba(214,39,22,.20);
+  clip-path: polygon(0 0, 100% 4%, 88% 100%, 0 100%);
+  animation: acrylicFloatB 18s ease-in-out infinite alternate;
+}
+
+@keyframes acrylicFloatA {
+  from { transform: translate3d(-.5vw, -.7vh, 0) rotate(-.35deg); }
+  to   { transform: translate3d(.9vw, .8vh, 0) rotate(.4deg); }
+}
+
+@keyframes acrylicFloatB {
+  from { transform: translate3d(.5vw, -.4vh, 0) rotate(.25deg); }
+  to   { transform: translate3d(-.8vw, .9vh, 0) rotate(-.45deg); }
+}
+
+@keyframes acrylicFloatC {
+  from { transform: translate3d(-.3vw, .5vh, 0) rotate(-.2deg); }
+  to   { transform: translate3d(.6vw, -.8vh, 0) rotate(.35deg); }
+}
+
+/* Se mantienen los mismos apoyos de contraste de la ruta. */
+.route-stage {
+  background:
+    radial-gradient(circle at 50% 45%,
+      rgba(255,255,255,.84) 0 18%,
+      rgba(255,255,255,.48) 48%,
+      rgba(255,255,255,.12) 76%,
+      transparent 100%);
+}
+
+.route-help {
+  background: rgba(255,255,255,.72);
+}
+
+/* Los antiguos halos de la escena permanecen desactivados. */
 .scene::before,
 .scene::after {
   display: none;
 }
 
-/* La ruta conserva contraste y deja ver los colores del fondo. */
-.route-stage {
-  background:
-    radial-gradient(circle at 50% 45%,
-      rgba(255, 255, 255, .84) 0 18%,
-      rgba(255, 255, 255, .48) 48%,
-      rgba(255, 255, 255, .12) 76%,
-      transparent 100%);
-}
-
-.route-help {
-  background: rgba(255, 255, 255, .72);
-}
-
-@keyframes fondoGiroPrincipal {
-  0% {
-    transform: rotate(0deg) scale(1.02);
-  }
-  50% {
-    transform: rotate(180deg) scale(1.08);
-  }
-  100% {
-    transform: rotate(360deg) scale(1.02);
-  }
-}
-
-@keyframes fondoDeriva {
-  0% {
-    transform: translate3d(-2vmax, -1vmax, 0) scale(.96) rotate(-3deg);
-  }
-  100% {
-    transform: translate3d(4vmax, 3vmax, 0) scale(1.08) rotate(6deg);
-  }
-}
-
-@media (max-width: 650px) {
-  .background-pattern {
-    inset: -38vmax;
-  }
-
-  .background-pattern::before {
-    filter: blur(24px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .background-pattern::before,
-  .background-pattern::after {
-    animation: none !important;
-  }
-}
-/* Fondo más suave cuando termina la transición */
+/* Al entrar a la ruta, el fondo conserva el comportamiento anterior. */
 .scene.route-active .background-pattern {
   opacity: .38;
   filter: saturate(.55) brightness(1.06);
 }
+
+@media (max-width: 700px) {
+  .acrylic-yellow-1 { width: 34vw; }
+  .acrylic-red-1 { width: 53vw; }
+  .acrylic-blue-1 { width: 51vw; }
+  .acrylic-blue-2 { width: 42vw; }
+  .acrylic-green-1 { width: 38vw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acrylic-sheet {
+    animation: none !important;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MINI JUEGO AZUL — CAMINO DE COLUMNAS
    Solo afecta la segunda fase azul. Las columnas completas se desplazan
