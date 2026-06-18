@@ -285,7 +285,18 @@ window.addEventListener("DOMContentLoaded", () => {
     const updateGallery = () => {
       const sectionRect = gallerySection.getBoundingClientRect();
       const travelY = gallerySection.offsetHeight - galleryStage.offsetHeight;
-      const progress = travelY > 0 ? Math.min(1, Math.max(0, -sectionRect.top / travelY)) : 0;
+      const inicioAnticipado = window.innerHeight * 0.45;
+
+const progress = travelY > 0
+  ? Math.min(
+      1,
+      Math.max(
+        0,
+        (inicioAnticipado - sectionRect.top) /
+        (travelY + inicioAnticipado)
+      )
+    )
+  : 0;
       const maxX = Math.max(0, galleryTrack.scrollWidth - galleryStage.clientWidth);
       galleryTrack.style.transform = `translate3d(${-progress * maxX}px, 0, 0)`;
     };

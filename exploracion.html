@@ -3,219 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Exploración interactiva del juego Enrútate.">
-  <title>Enrútate — Exploración</title>
+  <meta name="theme-color" content="#ffdd06">
+  <title>Conecta 4 — Enrútate</title>
   <link rel="stylesheet" href="exploracion.css">
 </head>
 <body>
-  <svg class="svg-defs" aria-hidden="true" focusable="false">
-    <symbol id="icon-nut" viewBox="0 0 64.45 74.09">
-      <path fill="currentColor" fill-rule="evenodd" d="M43.33,6.98h-25.38L0,24.93v25.38l17.95,17.95h25.38l17.95-17.95v-25.38L43.33,6.98ZM39.19,46.16c-4.73,4.72-12.37,4.72-17.07,0-4.73-4.72-4.73-12.36,0-17.07,4.71-4.72,12.36-4.73,17.07,0,4.72,4.71,4.71,12.36,0,17.07Z"/>
-    </symbol>
+  <div class="ambient" aria-hidden="true">
+    <span class="ambient__bar ambient__bar--green"></span>
+    <span class="ambient__bar ambient__bar--orange"></span>
+    <span class="ambient__bar ambient__bar--blue"></span>
+    <span class="ambient__glow ambient__glow--one"></span>
+    <span class="ambient__glow ambient__glow--two"></span>
+    <span class="ambient__glow ambient__glow--three"></span>
+  </div>
 
-    <symbol id="icon-red-piece" viewBox="0 0 122.48 118.66" preserveAspectRatio="xMidYMid meet">
-      <path fill="currentColor" d="M88.32,45.91c-4.49-1.46-8.99-2.92-13.48-4.38-1.46-4.49-2.92-8.99-4.38-13.48-4.21,2.14-8.42,4.29-12.63,6.43-4.21-2.14-8.42-4.29-12.63-6.43-1.46,4.49-2.92,8.99-4.38,13.48-4.49,1.46-8.99,2.92-13.48,4.38,2.14,4.21,4.29,8.42,6.43,12.63-2.14,4.21-4.29,8.42-6.43,12.63,4.49,1.46,8.99,2.92,13.48,4.38,1.46,4.49,2.92,8.99,4.38,13.48,4.21-2.14,8.42-4.29,12.63-6.43,4.21,2.14,8.42,4.29,12.63,6.43,1.46-4.49,2.92-8.99,4.38-13.48,4.49-1.46,8.99-2.92,13.48-4.38-2.14-4.21-4.29-8.42-6.43-12.63,2.14-4.21,4.29-8.42,6.43-12.63ZM66.68,67.41c-4.91,4.9-12.84,4.9-17.73,0-4.91-4.9-4.91-12.83,0-17.73,4.89-4.9,12.83-4.91,17.73,0,4.9,4.89,4.89,12.83,0,17.73Z"/>
-    </symbol>
+  <div class="flash" id="flash" aria-hidden="true"></div>
 
-    <symbol id="icon-yellow-piece" viewBox="0 0 122.48 118.66" preserveAspectRatio="xMidYMid meet">
-      <path fill="currentColor" d="M90.44,46c-4.33-1.41-8.65-2.81-12.98-4.22-1.41-4.33-2.81-8.65-4.22-12.98-4.06,2.06-8.11,4.13-12.17,6.19-4.05-2.06-8.11-4.13-12.17-6.19-1.41,4.33-2.81,8.65-4.22,12.98-4.33,1.41-8.65,2.81-12.98,4.22,2.06,4.05,4.13,8.11,6.19,12.16-2.06,4.05-4.13,8.11-6.19,12.16,4.33,1.41,8.65,2.81,12.98,4.22,1.41,4.33,2.81,8.65,4.22,12.98,4.06-2.06,8.11-4.13,12.17-6.19,4.06,2.06,8.11,4.13,12.17,6.19,1.41-4.33,2.81-8.65,4.22-12.98,4.33-1.41,8.65-2.81,12.98-4.22-2.06-4.05-4.13-8.11-6.19-12.16,2.06-4.05,4.13-8.11,6.19-12.16ZM69.62,66.7c-4.73,4.72-12.36,4.72-17.07,0-4.73-4.72-4.73-12.35,0-17.07,4.71-4.72,12.35-4.73,17.07,0,4.72,4.71,4.71,12.35,0,17.07Z"/>
-      <path fill="currentColor" d="M81.48,8.91h-40.8s-28.85,28.85-28.85,28.85v40.8l28.85,28.85h40.8s28.85-28.85,28.85-28.85v-40.8s-28.85-28.85-28.85-28.85ZM93.75,71.7l-14.44,4.7-4.7,14.44-13.53-6.89-13.53,6.89-4.7-14.44-14.44-4.7,6.89-13.53-6.89-13.53,14.44-4.7,4.7-14.44,13.53,6.89,13.53-6.89,4.7,14.44,14.44,4.7-6.89,13.53,6.89,13.53Z"/>
-    </symbol>
-  </svg>
-
-  <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
-  <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
-
-  <header class="hud">
-    <a class="hud-home" href="index.html">ENRÚTATE</a>
-
-    <div class="score-panel" id="scorePanel" aria-label="Puntos verdes acumulados">
-      <span class="score-label">PUNTOS</span>
-      <div class="score-slots">
-        <span class="score-slot" data-slot="0"></span>
-        <span class="score-slot" data-slot="1"></span>
-        <span class="score-slot" data-slot="2"></span>
-        <span class="score-slot" data-slot="3"></span>
-        <span class="score-slot" data-slot="4"></span>
-      </div>
-      <strong id="scoreText">0/5</strong>
-    </div>
-
-    <a class="hud-wiki" href="https://wiki.ead.pucv.cl/Enr%C3%BAtate" target="_blank" rel="noreferrer">WIKI</a>
+  <header class="topbar">
+    <a class="topbar__back" href="index.html" aria-label="Volver al inicio">← Inicio</a>
+    <p class="topbar__brand">ENRÚTATE / CONECTA 4</p>
+    <button class="topbar__button" id="new-game-top" type="button">Nueva partida</button>
   </header>
 
-  <main class="experience" id="experience">
-    <section class="scene" id="scene" aria-label="Experiencia interactiva de Enrútate">
-      <div class="background-pattern" aria-hidden="true">
-        <span class="acrylic-sheet acrylic-yellow-1"></span>
-        <span class="acrylic-sheet acrylic-yellow-2"></span>
-
-        <span class="acrylic-sheet acrylic-red-1"></span>
-        <span class="acrylic-sheet acrylic-red-2"></span>
-
-        <span class="acrylic-sheet acrylic-blue-1"></span>
-        <span class="acrylic-sheet acrylic-blue-2"></span>
-        <span class="acrylic-sheet acrylic-blue-3"></span>
-
-        <span class="acrylic-sheet acrylic-green-1"></span>
-        <span class="acrylic-sheet acrylic-green-2"></span>
-
-        <span class="acrylic-sheet acrylic-red-blue"></span>
-        <span class="acrylic-sheet acrylic-yellow-green"></span>
-        <span class="acrylic-sheet acrylic-small-blue"></span>
-        <span class="acrylic-sheet acrylic-small-red"></span>
+  <main class="game-shell">
+    <section class="intro-panel acrylic-card">
+      <div>
+        <p class="eyebrow">JUEGA CONTRA EL SITIO</p>
+        <h1>Cuatro piezas.<br>Una ruta cambiante.</h1>
+        <p class="intro-copy">
+          Conecta cuatro fichas moradas antes que el sitio conecte cuatro naranjas.
+          En cada turno puede aparecer una ficha especial que altera el recorrido.
+        </p>
       </div>
 
-      <section class="intro" id="intro" aria-labelledby="introTitle">
-        <div class="pawn-3d" id="pawn3d" role="img" aria-label="Peón morado tridimensional de Enrútate">
-          <canvas id="pawnCanvas" aria-hidden="true"></canvas>
-          <div class="pawn-fallback" aria-hidden="true">
-            <img src="assets/inicio-09.svg" alt="">
+      <div class="scoreboard" aria-label="Marcador">
+        <div class="score score--human">
+          <span class="score__disc" aria-hidden="true"></span>
+          <div>
+            <small>TÚ</small>
+            <strong id="human-score">0</strong>
           </div>
         </div>
-
-        <div class="intro-copy" id="introCopy">
-          <h1 id="introTitle">DESCUBRE<br> NUEVAS<br>POSIBILIDADES</h1>
+        <span class="scoreboard__divider">—</span>
+        <div class="score score--ai">
+          <span class="score__disc" aria-hidden="true"></span>
+          <div>
+            <small>SITIO</small>
+            <strong id="ai-score">0</strong>
+          </div>
         </div>
+      </div>
 
-        <div class="intro-scroll" aria-hidden="true">
-          <span></span>
-          <strong>DESLIZA</strong>
+      <div class="turn-card" id="turn-card">
+        <div class="turn-card__copy">
+          <span class="turn-card__label">FICHA ACTUAL</span>
+          <strong id="turn-title">Tu turno</strong>
+          <p id="turn-instruction">Elige una columna.</p>
         </div>
-      </section>
+        <div class="current-piece" id="current-piece" aria-hidden="true"></div>
+      </div>
 
-      <section class="route-stage" id="routeStage" aria-hidden="true">
-        <div class="route-atmosphere" aria-hidden="true"></div>
-        <div class="nut-ring" id="nutRing" aria-label="Tuercas interactivas"></div>
+      <div class="legend" aria-label="Tipos de fichas">
+        <article class="legend__item">
+          <span class="legend__disc legend__disc--human"></span>
+          <div><strong>Morada</strong><small>Tu ficha</small></div>
+        </article>
+        <article class="legend__item">
+          <span class="legend__disc legend__disc--ai"></span>
+          <div><strong>Naranjo</strong><small>Ficha del sitio</small></div>
+        </article>
+        <article class="legend__item">
+          <span class="legend__disc legend__disc--wild">✦</span>
+          <div><strong>Verde</strong><small>Comodín</small></div>
+        </article>
+        <article class="legend__item">
+          <span class="legend__disc legend__disc--bomb">×</span>
+          <div><strong>Roja</strong><small>Elimina una rival</small></div>
+        </article>
+        <article class="legend__item">
+          <span class="legend__disc legend__disc--spin">↻</span>
+          <div><strong>Azul</strong><small>Gira el tablero</small></div>
+        </article>
+      </div>
+    </section>
 
-        <div class="route-help">
-          <strong>ELIGE UNA PIEZA Y DESCUBRE SU EFECTO</strong>
+    <section class="board-section" aria-label="Tablero de Conecta 4">
+      <div class="board-stage" id="board-stage">
+        <div class="column-controls" id="column-controls" aria-label="Elige una columna"></div>
+        <div class="board-frame">
+          <div class="board-glare" aria-hidden="true"></div>
+          <div class="board-grid" id="board-grid" role="grid" aria-label="Tablero de seis filas por siete columnas"></div>
         </div>
-      </section>
-
-      <section class="red-transition" id="redTransition" aria-hidden="true">
-        <svg class="red-stars" aria-hidden="true" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <pattern id="redExactPattern" width="520" height="390" patternUnits="userSpaceOnUse" patternTransform="rotate(-3)">
-              <rect width="520" height="390" fill="#ffffff"></rect>
-              <g color="#d62716">
-                <use href="#icon-red-piece" x="8" y="12" width="150" height="145.32" transform="rotate(-18 83 84.66)"></use>
-                <use href="#icon-red-piece" x="178" y="18" width="90" height="87.19" transform="rotate(24 223 61.6)"></use>
-                <use href="#icon-red-piece" x="296" y="4" width="158" height="153.07" transform="rotate(7 375 80.54)"></use>
-                <use href="#icon-red-piece" x="58" y="158" width="98" height="94.94" transform="rotate(13 107 205.47)"></use>
-                <use href="#icon-red-piece" x="182" y="126" width="146" height="141.45" transform="rotate(-12 255 196.72)"></use>
-                <use href="#icon-red-piece" x="360" y="154" width="86" height="83.32" transform="rotate(31 403 195.66)"></use>
-                <use href="#icon-red-piece" x="425" y="116" width="118" height="114.32" transform="rotate(-20 484 173.16)"></use>
-                <use href="#icon-red-piece" x="2" y="282" width="126" height="122.07" transform="rotate(26 65 343.04)"></use>
-                <use href="#icon-red-piece" x="148" y="298" width="78" height="75.57" transform="rotate(-32 187 335.79)"></use>
-                <use href="#icon-red-piece" x="248" y="264" width="140" height="135.63" transform="rotate(17 318 331.82)"></use>
-                <use href="#icon-red-piece" x="402" y="286" width="104" height="100.76" transform="rotate(-12 454 336.38)"></use>
-              </g>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#redExactPattern)"></rect>
-        </svg>
-        <div class="red-lightning red-lightning-left" aria-hidden="true"></div>
-        <div class="red-lightning red-lightning-right" aria-hidden="true"></div>
-        <p>RUTA BLOQUEADA</p>
-      </section>
-
-      <section class="red-game" id="redGame" aria-hidden="true">
-        <div class="red-game-heading">
-          <span>DESAFÍO ROJO</span>
-          <h2 id="redGameTitle">DIBUJA UN CAMINO SIN TOCAR LAS PIEZAS</h2>
-        </div>
-
-        <div
-          class="red-maze"
-          id="redMaze"
-          role="application"
-          aria-labelledby="redGameTitle"
-          aria-describedby="redGameStatus"
-        >
-          <svg class="red-maze-lines" id="redMazeLines" aria-hidden="true">
-            <path class="red-trace-glow" id="redTraceGlow"></path>
-            <path class="red-trace-path" id="redTracePath"></path>
-          </svg>
-
-          <div class="red-obstacle-layer" id="redObstacleLayer" aria-hidden="true"></div>
-
-          <span class="red-route-marker red-start-marker" id="redStartMarker" aria-hidden="true">
-            <i></i>
-            <strong>INICIO</strong>
-          </span>
-
-          <span class="red-route-marker red-goal-marker" id="redGoalMarker" aria-hidden="true">
-            <i></i>
-            <strong>META</strong>
-          </span>
-        </div>
-
-        <p class="red-game-status" id="redGameStatus">MANTÉN PRESIONADO DESDE INICIO HASTA META</p>
-      </section>
-
-      <section class="blue-game" id="blueGame" aria-hidden="true">
-        <p class="blue-title" id="blueInstruction">HAZ CLICK PARA AVANZAR</p>
-
-        <button class="blue-wheel" id="blueWheel" type="button" aria-label="Unir las piezas azules">
-          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
-          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
-          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
-          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
-          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
-          <span class="blue-orbit-piece"><svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg></span>
-        </button>
-
-        <button class="blue-break-piece" id="blueBreakPiece" type="button" aria-label="Desarmar la pieza azul en cuatro fragmentos">
-          <svg viewBox="0 0 200 200" role="img" aria-label="Pieza azul dividida en cuatro fragmentos">
-            <path class="blue-fragment" d="M68.6 24.2H131.4L175.8 68.6L135.1 85.5L114.5 64.9H85.5L64.9 85.5L24.2 68.6Z"/>
-            <path class="blue-fragment" d="M175.8 68.6V131.4L131.4 175.8L114.5 135.1L135.1 114.5V85.5Z"/>
-            <path class="blue-fragment" d="M131.4 175.8H68.6L24.2 131.4L64.9 114.5L85.5 135.1H114.5Z"/>
-            <path class="blue-fragment" d="M24.2 131.4V68.6L64.9 85.5V114.5Z"/>
-            <circle class="blue-core" cx="100" cy="100" r="31"/>
-          </svg>
-        </button>
-
-        <div class="blue-align-stage" id="blueAlignStage" aria-hidden="true">
-          <div
-            class="blue-align-board"
-            id="blueAlignBoard"
-            role="group"
-            aria-label="Mueve las cuatro columnas para formar un camino azul en el centro"
-          ></div>
-          <p class="blue-align-help">ARRASTRA CADA COLUMNA HACIA ARRIBA O ABAJO</p>
-        </div>
-
-        <p class="blue-counter" id="blueCounter"></p>
-      </section>
-
-      <section class="green-feedback" id="greenFeedback" aria-hidden="true">
-        <div class="green-rings" aria-hidden="true"></div>
-        <div class="green-nut" aria-hidden="true">
-          <svg viewBox="0 0 64.45 74.09"><use href="#icon-nut"></use></svg>
-        </div>
-        <p>+1 PUNTO</p>
-      </section>
-
-      <section class="win-transition" id="winTransition" aria-hidden="true">
-        <div class="win-emblem" aria-hidden="true">
-          <svg viewBox="0 0 122.48 118.66" preserveAspectRatio="xMidYMid meet">
-            <use href="#icon-yellow-piece"></use>
-          </svg>
-        </div>
-
-        <p>5 PUNTOS CONSEGUIDOS</p>
-        <h2>GANASTE</h2>
-
-        <div class="win-actions">
-          <button id="restartButton" type="button">REPETIR</button>
-          <a href="index.html">VOLVER AL INICIO</a>
-        </div>
-      </section>
+        <p class="board-hint" id="board-hint">Haz clic sobre una flecha o una casilla para lanzar tu ficha.</p>
+      </div>
     </section>
   </main>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.161.0/three.min.js"></script>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog class="result-modal" id="result-modal">
+    <div class="result-modal__disc" id="result-disc" aria-hidden="true"></div>
+    <p class="eyebrow">PARTIDA TERMINADA</p>
+    <h2 id="result-title">Ganaste</h2>
+    <p id="result-copy">Lograste conectar cuatro piezas.</p>
+    <div class="result-modal__actions">
+      <button class="primary-button" id="play-again" type="button">Jugar otra vez</button>
+      <button class="secondary-button" id="close-result" type="button">Ver tablero</button>
+    </div>
+  </dialog>
+
   <script src="exploracion.js"></script>
 </body>
 </html>

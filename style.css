@@ -1481,7 +1481,7 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 .scroll-gallery-section {
-  min-height: 145vh;
+  min-height: 350vh;
 }
 
 .gallery-stage {
