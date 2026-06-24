@@ -2393,12 +2393,13 @@ html::-webkit-scrollbar-thumb:hover {
 
 .concept-bridge {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
+  grid-template-columns: 1fr;
+  justify-items: center;
   gap: clamp(28px, 6vw, 90px);
   padding: 110px clamp(24px, 7vw, 110px);
   background: var(--yellow);
 }
+
 
 .concept-bridge-number {
   color: var(--ink);
@@ -2704,4 +2705,48 @@ html::-webkit-scrollbar-thumb:hover {
   .logos-footer img {
     max-width: 150px;
   }
+}
+/* CENTRAR PUENTE CONCEPTUAL Y SECCIÓN PIX */
+.concept-bridge {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.concept-bridge-number {
+  display: none;
+}
+
+.concept-bridge-content {
+  width: min(100%, 1050px);
+  margin-inline: auto;
+}
+
+.game-extra-section {
+  grid-column: 1 / -1;
+  width: min(100%, 1050px);
+  max-width: 1050px;
+  margin-top: clamp(24px, 4vw, 44px);
+  margin-inline: auto;
+  justify-self: center;
+}
+/* CENTRAR PUENTE CONCEPTUAL SIN CAMBIAR SU DISEÑO */
+.concept-bridge {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+
+/* Este elemento está vacío, por lo que no necesita ocupar espacio */
+.concept-bridge-number {
+  display: none;
+}
+
+/* Mantiene ambas cajas centradas y una debajo de la otra */
+.concept-bridge > .concept-bridge-content,
+.concept-bridge > .game-extra-section {
+  grid-column: 1 / -1;
+  width: min(100%, 1050px);
+  max-width: 1050px;
+  justify-self: center;
+  margin-left: auto;
+  margin-right: auto;
 }

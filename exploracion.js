@@ -1,13 +1,15 @@
 (() => {
   'use strict';
 
+  const loadingScreen = document.getElementById('loadingScreen');
+  const loadingStart = document.getElementById('loadingStart');
   const experience = document.getElementById('experience');
   const scene = document.getElementById('scene');
   const intro = document.getElementById('intro');
   const introCopy = document.getElementById('introCopy');
   const introScroll = document.querySelector('.intro-scroll');
-  const backgroundPattern = document.querySelector('.background-pattern');
   const pawn3d = document.getElementById('pawn3d');
+  const introPathDots = [...document.querySelectorAll('.intro-path-dot')];
   const pawnCanvas = document.getElementById('pawnCanvas');
   const routeStage = document.getElementById('routeStage');
   const nutRing = document.getElementById('nutRing');
@@ -16,6 +18,8 @@
   const scoreSlots = [...document.querySelectorAll('.score-slot')];
 
   const redTransition = document.getElementById('redTransition');
+  const redExplosionSeeds = document.getElementById('redExplosionSeeds');
+  const redExplosionParticles = document.getElementById('redExplosionParticles');
   const redGame = document.getElementById('redGame');
   const redMaze = document.getElementById('redMaze');
   const redMazeLines = document.getElementById('redMazeLines');
@@ -36,6 +40,42 @@
   const greenFeedback = document.getElementById('greenFeedback');
   const winTransition = document.getElementById('winTransition');
   const restartButton = document.getElementById('restartButton');
+  /* ARCHIVOS DE SONIDO */
+  const loadingAudio = new Audio('assets/sonidos/carga.mp3');
+  const clickAudio = new Audio('assets/sonidos/click.mp3');
+  const winAudio = new Audio('assets/sonidos/ganaste.mp3');
+
+  loadingAudio.preload = 'auto';
+  clickAudio.preload = 'auto';
+  winAudio.preload = 'auto';
+
+  loadingAudio.volume = 0.35;
+  clickAudio.volume = 0.45;
+  winAudio.volume = 0.2;
+
+  loadingAudio.loop = true;
+
+  function playAudio(audio, restart = true) {
+    if (!audio) return;
+
+    if (restart) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+
+    const playback = audio.play();
+    if (playback?.catch) {
+      playback.catch(error => {
+        console.warn('No fue posible reproducir el sonido:', error);
+      });
+    }
+  }
+
+  function stopAudio(audio) {
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  }
 
   const PIECE_TYPES = [
     'red', 'green', 'blue', 'red',
@@ -43,17 +83,27 @@
     'green', 'red', 'blue', 'red'
   ];
 
-  // Las tuercas forman un recorrido abierto, no una órbita circular.
+  /*
+   * Doce posiciones seguras: cuatro dentro de cada octágono.
+   * El orden es izquierda → centro → derecha. Al ganar una pieza,
+   * las piezas intercambian estos lugares sin salir de las figuras.
+   */
   const DESKTOP_LAYOUT = [
-    [10, 23, -16], [27, 16, 8], [45, 27, -8], [64, 16, 12],
-    [84, 25, -14], [91, 49, 17], [74, 61, -7], [56, 49, 11],
-    [39, 66, -15], [17, 57, 13], [28, 82, -8], [68, 81, 10]
+    // Octágono izquierdo
+    [11, 36, -12], [23, 31, 8], [11, 64, 10], [23, 69, -8],
+    // Octágono central
+    [42, 35, -10], [58, 35, 10], [42, 65, 12], [58, 65, -12],
+    // Octágono derecho
+    [77, 31, -8], [89, 36, 12], [77, 69, 8], [89, 64, -10]
   ];
 
   const MOBILE_LAYOUT = [
-    [15, 20, -12], [50, 15, 8], [84, 22, -8], [68, 36, 12],
-    [28, 37, -12], [11, 53, 15], [48, 51, -7], [86, 54, 10],
-    [70, 69, -13], [31, 70, 12], [13, 84, -7], [52, 84, 9]
+    // Octágono izquierdo
+    [10, 43, -10], [24, 39, 8], [10, 57, 9], [24, 61, -8],
+    // Octágono central
+    [42, 43, -9], [58, 43, 9], [42, 57, 11], [58, 57, -11],
+    // Octágono derecho
+    [76, 39, -8], [90, 43, 10], [76, 61, 8], [90, 57, -10]
   ];
 
   const fragmentOrder = [0, 1, 2, 3];
@@ -85,6 +135,7 @@
   ];
 
   let pieces = [];
+  let pieceLayoutOrder = [];
   let started = false;
   let locked = false;
   let score = 0;
@@ -98,12 +149,15 @@
   let redPointerId = null;
   let redPoints = [];
   let redPathLength = 0;
-  let blueColumnRows = [];
-  let blueColumnControls = [];
+  let blueRingAngles = [];
+  let blueRingControls = [];
+  let bluePuzzleSvg = null;
   let transitionRunning = false;
   let wheelIntent = 0;
   let touchStartY = null;
   let audioContext = null;
+  let pawnEraserFrame = null;
+  let loadingStarted = false;
 
   const wait = milliseconds => new Promise(resolve => window.setTimeout(resolve, milliseconds));
   const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
@@ -319,6 +373,7 @@
   function createPieces() {
     nutRing.innerHTML = '';
     pieces = [];
+    pieceLayoutOrder = PIECE_TYPES.map((_, index) => index);
 
     PIECE_TYPES.forEach((type, index) => {
       const piece = document.createElement('button');
@@ -341,19 +396,38 @@
   function positionPieces() {
     if (!pieces.length) return;
 
-    const layout = window.innerWidth <= 760 ? MOBILE_LAYOUT : DESKTOP_LAYOUT;
+    const useCompactLayout = window.innerWidth <= 900 || window.innerHeight > window.innerWidth;
+    const layout = useCompactLayout ? MOBILE_LAYOUT : DESKTOP_LAYOUT;
 
     pieces.forEach((piece, index) => {
-      const [left, top, rotation] = layout[index];
+      const layoutIndex = pieceLayoutOrder[index] ?? index;
+      const [left, top, rotation] = layout[layoutIndex];
       piece.style.left = `${left}%`;
       piece.style.top = `${top}%`;
       piece.style.setProperty('--piece-rotation', `${rotation}deg`);
     });
   }
 
+  function shufflePiecePositions() {
+    if (pieceLayoutOrder.length < 2) return;
+
+    const previousOrder = pieceLayoutOrder.slice();
+    const displacement = 1 + Math.floor(Math.random() * (previousOrder.length - 1));
+
+    // El desplazamiento circular garantiza que ninguna pieza conserve su lugar.
+    pieceLayoutOrder = previousOrder.map(
+      (_, index) => previousOrder[(index + displacement) % previousOrder.length]
+    );
+    routeStage.classList.add('is-reordering');
+    positionPieces();
+
+    window.setTimeout(() => {
+      routeStage.classList.remove('is-reordering');
+    }, 760);
+  }
+
   function revealPieces() {
     scene.classList.add('route-active');
-    routeStage.classList.remove('is-preview');
     routeStage.style.removeProperty('opacity');
     routeStage.style.removeProperty('transform');
     routeStage.classList.add('is-visible');
@@ -365,8 +439,64 @@
     });
   }
 
+  function resetPawnEraser() {
+    if (pawnEraserFrame !== null) {
+      window.cancelAnimationFrame(pawnEraserFrame);
+      pawnEraserFrame = null;
+    }
+
+    introPathDots.forEach(dot => {
+      dot.classList.remove('is-erased');
+    });
+  }
+
+  function startPawnEraser() {
+    resetPawnEraser();
+
+    if (!pawn3d || !introPathDots.length) return;
+
+    const detectContact = () => {
+      if (!scene.classList.contains('journey-playing')) {
+        pawnEraserFrame = null;
+        return;
+      }
+
+      const pawnRect = pawn3d.getBoundingClientRect();
+
+      /*
+       * La zona de borrado se ubica en la parte inferior del peón.
+       * Al moverse, funciona como una goma y borra cada círculo
+       * únicamente cuando realmente pasa sobre él.
+       */
+      const eraserX = pawnRect.left + pawnRect.width * 0.5;
+      const eraserY = pawnRect.top + pawnRect.height * 0.72;
+      const eraserRadius = Math.max(
+        16,
+        Math.min(pawnRect.width, pawnRect.height) * 0.13
+      );
+
+      introPathDots.forEach(dot => {
+        if (dot.classList.contains('is-erased')) return;
+
+        const dotRect = dot.getBoundingClientRect();
+        const dotX = dotRect.left + dotRect.width * 0.5;
+        const dotY = dotRect.top + dotRect.height * 0.5;
+        const dotRadius = Math.max(dotRect.width, dotRect.height) * 0.5;
+        const distance = Math.hypot(eraserX - dotX, eraserY - dotY);
+
+        if (distance <= eraserRadius + dotRadius) {
+          dot.classList.add('is-erased');
+        }
+      });
+
+      pawnEraserFrame = window.requestAnimationFrame(detectContact);
+    };
+
+    pawnEraserFrame = window.requestAnimationFrame(detectContact);
+  }
+
   async function beginExperience() {
-    if (started || transitionRunning || locked) return;
+    if (loadingScreen?.isConnected || started || transitionRunning || locked) return;
 
     started = true;
     transitionRunning = true;
@@ -377,6 +507,7 @@
     routeStage.setAttribute('aria-hidden', 'false');
     routeStage.classList.add('is-cinematic');
     scene.classList.add('journey-playing');
+    startPawnEraser();
 
     // Las piezas aparecen durante la transición, no después de ella.
     await wait(520);
@@ -398,7 +529,7 @@
   }
 
   function handleWheelIntent(event) {
-    if (started || transitionRunning) return;
+    if (loadingScreen?.isConnected || started || transitionRunning) return;
 
     if (event.deltaY <= 0) {
       wheelIntent = Math.max(0, wheelIntent + event.deltaY * 0.15);
@@ -412,12 +543,12 @@
   }
 
   function handleTouchStart(event) {
-    if (started || transitionRunning || !event.touches.length) return;
+    if (loadingScreen?.isConnected || started || transitionRunning || !event.touches.length) return;
     touchStartY = event.touches[0].clientY;
   }
 
   function handleTouchMove(event) {
-    if (started || transitionRunning || touchStartY === null || !event.touches.length) return;
+    if (loadingScreen?.isConnected || started || transitionRunning || touchStartY === null || !event.touches.length) return;
 
     const distance = touchStartY - event.touches[0].clientY;
     if (distance > 34) {
@@ -428,7 +559,7 @@
   }
 
   function handleKeyboardIntent(event) {
-    if (started || transitionRunning) return;
+    if (loadingScreen?.isConnected || started || transitionRunning) return;
     if (!['ArrowDown', 'PageDown', ' ', 'Enter'].includes(event.key)) return;
 
     event.preventDefault();
@@ -601,8 +732,9 @@
     redMaze.classList.remove('is-drawing');
     redGame.classList.add('is-won');
     redGameStatus.textContent = 'CAMINO COMPLETADO — GANASTE UNA PIEZA VERDE';
+    playGreenRewardSound();
 
-    await wait(980);
+    await wait(720);
     await awardRedGreenPoint();
   }
 
@@ -619,7 +751,7 @@
     }
 
     score = Math.min(5, score + 1);
-    await wait(430);
+    await wait(320);
     updateScore();
 
     resetRedGame();
@@ -635,6 +767,8 @@
     }
 
     restoreRoute();
+    shufflePiecePositions();
+    await wait(720);
     locked = false;
   }
 
@@ -701,212 +835,367 @@
     failRedMaze('NO SUELTES ANTES DE LLEGAR A META');
   }
 
-  async function playRedTransition(sourcePiece) {
-    muteRoute();
-    redTransition.classList.add('is-visible');
-    redTransition.setAttribute('aria-hidden', 'false');
+  function buildRedExplosion() {
+    if (!redExplosionSeeds || !redExplosionParticles) return;
 
-    await wait(2850);
+    redExplosionSeeds.innerHTML = '';
+    redExplosionParticles.innerHTML = '';
 
-    redTransition.classList.remove('is-visible');
-    redTransition.setAttribute('aria-hidden', 'true');
-    await wait(160);
-    startRedGame(sourcePiece);
-  }
+    const iconMarkup = `
+      <svg viewBox="0 0 122.48 118.66" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <use href="#icon-red-piece"></use>
+      </svg>
+    `;
 
-  function normalizeBluePhase(value) {
-    return ((value % 2) + 2) % 2;
-  }
+    // Primera multiplicación: ocho piezas aparecen alrededor de la pieza central.
+    for (let index = 0; index < 8; index += 1) {
+      const angle = (Math.PI * 2 * index) / 8 - Math.PI / 2;
+      const distance = 128 + (index % 2) * 24;
+      const seed = document.createElement('span');
 
-  function getBlueTrack(column) {
-    return column?.querySelector('.blue-ring-track') || null;
-  }
-
-  function setBlueColumnPhase(index, phase, immediate = false) {
-    const nextPhase = normalizeBluePhase(phase);
-    const column = blueColumnControls[index];
-
-    blueColumnRows[index] = nextPhase;
-    if (!column) return;
-
-    const track = getBlueTrack(column);
-    column.style.setProperty(
-      '--track-offset',
-      nextPhase === 1 ? '-14.285714%' : '-28.571429%'
-    );
-
-    if (track) {
-      if (immediate) track.style.transition = 'none';
-      track.style.removeProperty('transform');
-      if (immediate) {
-        void track.offsetHeight;
-        track.style.removeProperty('transition');
-      }
+      seed.className = 'red-explosion-seed';
+      seed.style.setProperty('--seed-x', `${Math.cos(angle) * distance}px`);
+      seed.style.setProperty('--seed-y', `${Math.sin(angle) * distance}px`);
+      seed.style.setProperty('--seed-rotation', `${index * 37 - 90}deg`);
+      seed.style.setProperty('--seed-delay', `${0.31 + index * 0.018}s`);
+      seed.innerHTML = iconMarkup;
+      redExplosionSeeds.appendChild(seed);
     }
 
-    column.setAttribute(
+    /*
+     * Segunda multiplicación: una retícula irregular de piezas sale desde
+     * el centro y termina cubriendo la pantalla, como en el video.
+     */
+    const columns = window.innerWidth <= 760 ? 7 : 10;
+    const rows = window.innerWidth <= 760 ? 9 : 7;
+    const total = columns * rows;
+
+    for (let index = 0; index < total; index += 1) {
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+      const xBase = columns === 1 ? 0 : -48 + (column / (columns - 1)) * 96;
+      const yBase = rows === 1 ? 0 : -47 + (row / (rows - 1)) * 94;
+      const particle = document.createElement('span');
+      const jitterX = (Math.random() - 0.5) * 7;
+      const jitterY = (Math.random() - 0.5) * 8;
+      const delay = 0.48 + Math.random() * 0.24;
+      const scale = 0.98 + Math.random() * 0.62;
+      const rotation = -55 + Math.random() * 110;
+      const particleX = xBase + jitterX;
+      const particleY = yBase + jitterY;
+      const exitMultiplier = 1.1 + Math.random() * 0.08;
+      const exitScale = scale * (1.55 + Math.random() * 0.22);
+
+      particle.className = 'red-explosion-particle';
+      particle.style.setProperty('--particle-x', `${particleX}vw`);
+      particle.style.setProperty('--particle-y', `${particleY}vh`);
+      particle.style.setProperty('--particle-exit-x', `${particleX * exitMultiplier}vw`);
+      particle.style.setProperty('--particle-exit-y', `${particleY * exitMultiplier}vh`);
+      particle.style.setProperty('--particle-delay', `${delay}s`);
+      particle.style.setProperty('--particle-scale', scale.toFixed(2));
+      particle.style.setProperty('--particle-exit-scale', exitScale.toFixed(2));
+      particle.style.setProperty('--particle-rotation', `${rotation.toFixed(1)}deg`);
+      particle.style.setProperty('--particle-size', `${(6.6 + Math.random() * 3.8).toFixed(2)}vw`);
+      particle.innerHTML = iconMarkup;
+      redExplosionParticles.appendChild(particle);
+    }
+  }
+
+  async function playRedTransition(sourcePiece) {
+    muteRoute();
+    buildRedExplosion();
+    playRedTransitionSound();
+
+    redTransition.classList.remove('is-visible', 'is-handoff');
+    redTransition.setAttribute('aria-hidden', 'false');
+    void redTransition.offsetWidth;
+    redTransition.classList.add('is-visible');
+
+    /*
+     * El minijuego comienza antes de que termine la última expansión.
+     * Así no queda un fotograma congelado con piezas rojas: la explosión
+     * continúa moviéndose mientras descubre el tablero que está detrás.
+     */
+    await wait(1420);
+    startRedGame(sourcePiece);
+    locked = true;
+    redTransition.classList.add('is-handoff');
+
+    await wait(600);
+
+    // La capa se retira de inmediato cuando termina el movimiento.
+    redTransition.setAttribute('aria-hidden', 'true');
+    redTransition.classList.remove('is-visible', 'is-handoff');
+    locked = false;
+  }
+
+  function normalizeBlueAngle(value) {
+    return ((value % 360) + 360) % 360;
+  }
+
+  function isBlueRingAligned(angle) {
+    const normalized = normalizeBlueAngle(angle);
+    const remainder = normalized % 90;
+    return remainder < 0.5 || remainder > 89.5;
+  }
+
+  function polarPoint(cx, cy, radius, angle) {
+    const radians = (angle - 90) * Math.PI / 180;
+    return {
+      x: cx + radius * Math.cos(radians),
+      y: cy + radius * Math.sin(radians)
+    };
+  }
+
+  function describeBlueRingSegment(cx, cy, outerRadius, innerRadius, startAngle, endAngle) {
+    const outerStart = polarPoint(cx, cy, outerRadius, endAngle);
+    const outerEnd = polarPoint(cx, cy, outerRadius, startAngle);
+    const innerStart = polarPoint(cx, cy, innerRadius, startAngle);
+    const innerEnd = polarPoint(cx, cy, innerRadius, endAngle);
+    const largeArc = endAngle - startAngle <= 180 ? 0 : 1;
+
+    return [
+      `M ${outerStart.x} ${outerStart.y}`,
+      `A ${outerRadius} ${outerRadius} 0 ${largeArc} 0 ${outerEnd.x} ${outerEnd.y}`,
+      `L ${innerStart.x} ${innerStart.y}`,
+      `A ${innerRadius} ${innerRadius} 0 ${largeArc} 1 ${innerEnd.x} ${innerEnd.y}`,
+      'Z'
+    ].join(' ');
+  }
+
+  function setBlueRingAngle(index, angle, immediate = false) {
+    const ring = blueRingControls[index];
+    const nextAngle = normalizeBlueAngle(angle);
+
+    blueRingAngles[index] = nextAngle;
+    if (!ring) return;
+
+    if (immediate) ring.classList.add('is-dragging');
+    ring.style.transform = `rotate(${nextAngle}deg)`;
+    if (immediate) {
+      window.requestAnimationFrame(() => ring.classList.remove('is-dragging'));
+    }
+
+    ring.classList.toggle('is-path-aligned', isBlueRingAligned(nextAngle));
+    ring.setAttribute(
       'aria-label',
-      `Columna ${index + 1}. ${nextPhase === 1 ? 'El tramo azul está conectado al centro.' : 'El tramo azul todavía no está conectado.'} Arrastra hacia arriba o abajo.`
+      `Anillo ${index + 1}. ${isBlueRingAligned(nextAngle) ? 'El camino blanco está alineado con el centro.' : 'El camino blanco todavía no coincide con el centro.'}`
     );
+  }
+
+  function getBluePointerAngle(event) {
+    if (!bluePuzzleSvg) return 0;
+
+    const rect = bluePuzzleSvg.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    return Math.atan2(event.clientY - centerY, event.clientX - centerX) * 180 / Math.PI;
   }
 
   function checkBlueAlignment() {
-    if (blueState !== 'aligning' || locked) return;
-    if (!blueColumnRows.length) return;
+    if (blueState !== 'aligning' || locked || !blueRingAngles.length) return;
 
-    const stillMoving = blueColumnControls.some(column => column.dataset.moving === 'true');
+    const stillMoving = blueRingControls.some(ring => ring.dataset.moving === 'true');
     if (stillMoving) return;
 
-    const aligned = blueColumnRows.every(phase => phase === 1);
+    const aligned = blueRingAngles.every(isBlueRingAligned);
     if (aligned) finishBlueAlignment();
   }
 
-  function animateBlueColumnStep(index, direction) {
+  function rotateBlueRing(index, direction = 1) {
     if (blueState !== 'aligning' || locked) return;
 
-    const column = blueColumnControls[index];
-    const track = getBlueTrack(column);
-    if (!column || !track || column.dataset.moving === 'true') return;
+    const ring = blueRingControls[index];
+    if (!ring || ring.dataset.moving === 'true') return;
 
-    const cellHeight = Math.max(1, column.clientHeight / 3);
-    const startPhase = blueColumnRows[index];
-    const startOffset = startPhase === 1 ? -cellHeight : -2 * cellHeight;
-    const targetOffset = startOffset + direction * cellHeight;
-    const nextPhase = normalizeBluePhase(startPhase + direction);
-
-    column.dataset.moving = 'true';
-    track.style.transition = 'transform .36s cubic-bezier(.2,.82,.2,1)';
-    track.style.transform = `translateY(${targetOffset}px)`;
+    ring.dataset.moving = 'true';
+    playBlueBubbleSound(false);
+    setBlueRingAngle(index, blueRingAngles[index] + direction * 45);
 
     window.setTimeout(() => {
-      setBlueColumnPhase(index, nextPhase, true);
-      column.dataset.moving = 'false';
-      window.setTimeout(checkBlueAlignment, 30);
-    }, 370);
+      ring.dataset.moving = 'false';
+      checkBlueAlignment();
+    }, 390);
   }
 
   function createBlueAlignment() {
-    // El inicio replica el video: columnas alternadas hasta completar
-    // una franja azul continua en la fila central.
-    const startPhases = [1, 0, 1, 0];
+    const svgNamespace = 'http://www.w3.org/2000/svg';
+    const center = 300;
+    const startAngles = [45, 180, 315];
+    const ringSettings = [
+      { radius: 235, width: 94 },
+      { radius: 145, width: 70 },
+      { radius: 78, width: 42 }
+    ];
 
     blueAlignBoard.innerHTML = '';
-    blueColumnRows = startPhases.slice();
-    blueColumnControls = [];
+    blueRingAngles = startAngles.slice();
+    blueRingControls = [];
     blueAlignStage.setAttribute('aria-hidden', 'false');
+    blueAlignBoard.setAttribute(
+      'aria-label',
+      'Gira los tres anillos para que los caminos blancos lleguen al centro verde.'
+    );
 
-    startPhases.forEach((phase, index) => {
-      const column = document.createElement('button');
-      let pointerStartY = 0;
-      let startPhase = phase;
-      let currentDistance = 0;
-      let dragging = false;
-      let suppressClick = false;
+    const svg = document.createElementNS(svgNamespace, 'svg');
+    svg.classList.add('blue-concentric-svg');
+    svg.setAttribute('viewBox', '0 0 600 600');
+    svg.setAttribute('role', 'group');
+    svg.setAttribute('aria-label', 'Rompecabezas de tres anillos concéntricos');
+    bluePuzzleSvg = svg;
 
-      column.type = 'button';
-      column.className = 'blue-ring-column';
-      column.dataset.column = String(index);
-      column.dataset.moving = 'false';
-      column.innerHTML = `
-        <span class="blue-ring-track" aria-hidden="true">
-          <span class="blue-ring-cell is-blue"></span>
-          <span class="blue-ring-cell"></span>
-          <span class="blue-ring-cell is-blue"></span>
-          <span class="blue-ring-cell"></span>
-          <span class="blue-ring-cell is-blue"></span>
-          <span class="blue-ring-cell"></span>
-          <span class="blue-ring-cell is-blue"></span>
-        </span>
-      `;
+    const disc = document.createElementNS(svgNamespace, 'circle');
+    disc.classList.add('blue-puzzle-disc');
+    disc.setAttribute('cx', center);
+    disc.setAttribute('cy', center);
+    disc.setAttribute('r', 286);
+    svg.appendChild(disc);
 
-      const finishDrag = (event, cancelled = false) => {
-        if (!dragging) return;
+    ringSettings.forEach((settings, index) => {
+      const ring = document.createElementNS(svgNamespace, 'g');
+      const outerRadius = settings.radius + settings.width / 2;
+      const innerRadius = settings.radius - settings.width / 2;
+      let pointerId = null;
+      let pointerStartAngle = 0;
+      let ringStartAngle = startAngles[index];
+      let movement = 0;
 
-        dragging = false;
-        column.classList.remove('is-dragging');
+      ring.classList.add('blue-puzzle-ring');
+      ring.dataset.ring = String(index);
+      ring.dataset.moving = 'false';
+      ring.setAttribute('role', 'button');
+      ring.setAttribute('tabindex', '0');
 
-        if (column.hasPointerCapture?.(event.pointerId)) {
-          column.releasePointerCapture(event.pointerId);
+      const base = document.createElementNS(svgNamespace, 'circle');
+      base.classList.add('blue-puzzle-ring-base');
+      base.setAttribute('cx', center);
+      base.setAttribute('cy', center);
+      base.setAttribute('r', settings.radius);
+      base.setAttribute('stroke-width', settings.width);
+      ring.appendChild(base);
+
+      [0, 90, 180, 270].forEach(pathAngle => {
+        const whitePath = document.createElementNS(svgNamespace, 'path');
+        whitePath.classList.add('blue-puzzle-white-path');
+        whitePath.setAttribute(
+          'd',
+          describeBlueRingSegment(
+            center,
+            center,
+            outerRadius,
+            innerRadius,
+            pathAngle - 13,
+            pathAngle + 13
+          )
+        );
+        ring.appendChild(whitePath);
+      });
+
+      [outerRadius, innerRadius].forEach(radius => {
+        const boundary = document.createElementNS(svgNamespace, 'circle');
+        boundary.classList.add('blue-puzzle-boundary');
+        boundary.setAttribute('cx', center);
+        boundary.setAttribute('cy', center);
+        boundary.setAttribute('r', radius);
+        ring.appendChild(boundary);
+      });
+
+      const hitArea = document.createElementNS(svgNamespace, 'circle');
+      hitArea.classList.add('blue-puzzle-hit');
+      hitArea.setAttribute('cx', center);
+      hitArea.setAttribute('cy', center);
+      hitArea.setAttribute('r', settings.radius);
+      hitArea.setAttribute('stroke-width', settings.width);
+      ring.appendChild(hitArea);
+
+      ring.addEventListener('pointerdown', event => {
+        if (blueState !== 'aligning' || locked || ring.dataset.moving === 'true') return;
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        pointerId = event.pointerId;
+        pointerStartAngle = getBluePointerAngle(event);
+        ringStartAngle = blueRingAngles[index];
+        movement = 0;
+        ring.classList.add('is-dragging');
+        ring.setPointerCapture?.(event.pointerId);
+      });
+
+      ring.addEventListener('pointermove', event => {
+        if (pointerId !== event.pointerId || blueState !== 'aligning') return;
+
+        const delta = getBluePointerAngle(event) - pointerStartAngle;
+        movement = delta;
+        ring.style.transform = `rotate(${ringStartAngle + delta}deg)`;
+        event.preventDefault();
+      });
+
+      const finishRingMove = event => {
+        if (pointerId !== event.pointerId) return;
+
+        if (ring.hasPointerCapture?.(event.pointerId)) {
+          ring.releasePointerCapture(event.pointerId);
         }
 
-        const track = getBlueTrack(column);
-        const cellHeight = Math.max(1, column.clientHeight / 3);
-        const baseOffset = startPhase === 1 ? -cellHeight : -2 * cellHeight;
-        const distance = cancelled ? 0 : currentDistance;
-        const threshold = cellHeight * .18;
-        const direction = distance > threshold ? 1 : distance < -threshold ? -1 : 0;
-        const targetOffset = baseOffset + direction * cellHeight;
-        const nextPhase = direction === 0
-          ? startPhase
-          : normalizeBluePhase(startPhase + direction);
+        ring.classList.remove('is-dragging');
+        ring.dataset.moving = 'true';
 
-        suppressClick = Math.abs(distance) > 6;
-        column.dataset.moving = 'true';
-        track.style.transition = 'transform .34s cubic-bezier(.2,.82,.2,1)';
-        track.style.transform = `translateY(${targetOffset}px)`;
+        const targetAngle = Math.abs(movement) < 7
+          ? ringStartAngle + 45
+          : Math.round((ringStartAngle + movement) / 45) * 45;
+
+        playBlueBubbleSound(false);
+        setBlueRingAngle(index, targetAngle);
+        pointerId = null;
 
         window.setTimeout(() => {
-          setBlueColumnPhase(index, nextPhase, true);
-          column.dataset.moving = 'false';
-          currentDistance = 0;
-          window.setTimeout(checkBlueAlignment, 30);
-        }, 350);
+          ring.dataset.moving = 'false';
+          checkBlueAlignment();
+        }, 390);
       };
 
-      column.addEventListener('pointerdown', event => {
-        if (blueState !== 'aligning' || locked || column.dataset.moving === 'true') return;
-
-        const track = getBlueTrack(column);
-        const cellHeight = Math.max(1, column.clientHeight / 3);
-        const baseOffset = blueColumnRows[index] === 1 ? -cellHeight : -2 * cellHeight;
-
-        dragging = true;
-        suppressClick = false;
-        pointerStartY = event.clientY;
-        startPhase = blueColumnRows[index];
-        currentDistance = 0;
-        column.classList.add('is-dragging');
-        column.setPointerCapture?.(event.pointerId);
-        track.style.transition = 'none';
-        track.style.transform = `translateY(${baseOffset}px)`;
+      ring.addEventListener('pointerup', finishRingMove);
+      ring.addEventListener('pointercancel', event => {
+        movement = 0;
+        finishRingMove(event);
       });
 
-      column.addEventListener('pointermove', event => {
-        if (!dragging || blueState !== 'aligning') return;
+      ring.addEventListener('keydown', event => {
+        const backward = ['ArrowLeft', 'ArrowUp'].includes(event.key);
+        const forward = ['ArrowRight', 'ArrowDown', 'Enter', ' '].includes(event.key);
+        if (!backward && !forward) return;
 
-        const track = getBlueTrack(column);
-        const cellHeight = Math.max(1, column.clientHeight / 3);
-        const baseOffset = startPhase === 1 ? -cellHeight : -2 * cellHeight;
-        currentDistance = Math.max(
-          -cellHeight * .95,
-          Math.min(cellHeight * .95, event.clientY - pointerStartY)
-        );
-
-        track.style.transform = `translateY(${baseOffset + currentDistance}px)`;
         event.preventDefault();
+        rotateBlueRing(index, backward ? -1 : 1);
       });
 
-      column.addEventListener('pointerup', event => finishDrag(event));
-      column.addEventListener('pointercancel', event => finishDrag(event, true));
-
-      column.addEventListener('click', () => {
-        if (suppressClick) {
-          suppressClick = false;
-          return;
-        }
-        animateBlueColumnStep(index, 1);
-      });
-
-      column.addEventListener('keydown', event => {
-        if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
-        event.preventDefault();
-        animateBlueColumnStep(index, event.key === 'ArrowDown' ? 1 : -1);
-      });
-
-      blueAlignBoard.appendChild(column);
-      blueColumnControls.push(column);
-      setBlueColumnPhase(index, phase, true);
+      svg.appendChild(ring);
+      blueRingControls.push(ring);
+      setBlueRingAngle(index, startAngles[index], true);
     });
+
+    const coreGuides = document.createElementNS(svgNamespace, 'g');
+    coreGuides.classList.add('blue-puzzle-core-guides');
+
+    [0, 90, 180, 270].forEach(angle => {
+      const guide = document.createElementNS(svgNamespace, 'rect');
+      guide.classList.add('blue-puzzle-core-path');
+      guide.setAttribute('x', 288);
+      guide.setAttribute('y', 232);
+      guide.setAttribute('width', 24);
+      guide.setAttribute('height', 68);
+      guide.setAttribute('transform', `rotate(${angle} ${center} ${center})`);
+      coreGuides.appendChild(guide);
+    });
+
+    const core = document.createElementNS(svgNamespace, 'polygon');
+    core.classList.add('blue-puzzle-core');
+    core.setAttribute('points', '276,266 324,266 334,276 334,324 324,334 276,334 266,324 266,276');
+    coreGuides.appendChild(core);
+    svg.appendChild(coreGuides);
+
+    blueAlignBoard.appendChild(svg);
   }
 
   async function finishBlueAlignment() {
@@ -915,16 +1204,22 @@
     locked = true;
     blueState = 'aligned';
     blueGame.classList.add('is-aligned');
-    blueColumnControls.forEach(column => { column.disabled = true; });
-    blueInstruction.textContent = '¡AZUL ALINEADO!';
+    blueRingControls.forEach(ring => {
+      ring.style.pointerEvents = 'none';
+      ring.setAttribute('aria-disabled', 'true');
+    });
+    blueInstruction.textContent = '¡CAMINOS CONECTADOS!';
     blueCounter.textContent = 'GANASTE UNA PIEZA VERDE';
 
-    await wait(1050);
+    await wait(560);
     await awardBlueGreenPoint();
   }
 
   async function awardBlueGreenPoint() {
     const slotIndex = score;
+
+    // Se reproduce al comenzar la recompensa, separado del último sonido azul.
+    playGreenRewardSound();
 
     if (activeBlueSourcePiece) {
       activeBlueSourcePiece.classList.add('is-collected');
@@ -936,7 +1231,7 @@
     }
 
     score = Math.min(5, score + 1);
-    await wait(430);
+    await wait(320);
     updateScore();
 
     resetBlueGame();
@@ -952,6 +1247,8 @@
     }
 
     restoreRoute();
+    shufflePiecePositions();
+    await wait(720);
     locked = false;
   }
 
@@ -960,8 +1257,9 @@
     removedBlueFragments = 0;
     fragmentBusy = false;
     activeBlueSourcePiece = null;
-    blueColumnRows = [];
-    blueColumnControls = [];
+    blueRingAngles = [];
+    blueRingControls = [];
+    bluePuzzleSvg = null;
     blueAlignBoard.innerHTML = '';
     blueAlignStage.setAttribute('aria-hidden', 'true');
     blueGame.className = 'blue-game';
@@ -982,6 +1280,7 @@
 
   async function startBlueGame(sourcePiece) {
     muteRoute();
+    playBlueBubbleSound(false);
     resetBlueGame();
     activeBlueSourcePiece = sourcePiece;
     blueState = 'orbit';
@@ -997,6 +1296,7 @@
   async function mergeBluePieces() {
     if (blueState !== 'orbit' || locked) return;
 
+    playBlueBubbleSound(false);
     locked = true;
     blueState = 'merging';
     blueWheel.disabled = true;
@@ -1018,6 +1318,7 @@
   async function removeBlueFragment() {
     if (blueState !== 'breaking' || fragmentBusy) return;
 
+    playBlueBubbleSound(false);
     fragmentBusy = true;
     const fragmentIndex = fragmentOrder[removedBlueFragments];
     const fragment = blueFragments[fragmentIndex];
@@ -1044,7 +1345,7 @@
     blueState = 'complete';
     blueGame.classList.add('is-complete');
     blueInstruction.textContent = 'PRIMER DESAFÍO COMPLETADO';
-    blueCounter.textContent = 'PREPÁRATE PARA ALINEAR EL ANILLO';
+    blueCounter.textContent = 'PREPÁRATE PARA GIRAR LOS ANILLOS';
     blueBreakPiece.disabled = true;
 
     await wait(900);
@@ -1052,15 +1353,16 @@
     createBlueAlignment();
     blueGame.classList.remove('is-merging', 'is-piece-ready', 'is-complete');
     blueGame.classList.add('is-aligning');
-    blueInstruction.textContent = 'FORMA UN CAMINO AZUL EN EL CENTRO';
-    blueCounter.textContent = 'ARRASTRA LAS 4 COLUMNAS';
+    blueInstruction.textContent = 'CONECTA LOS CAMINOS BLANCOS CON EL CENTRO';
+    blueCounter.textContent = 'GIRA CADA ANILLO EN PASOS DE 45°';
     blueState = 'aligning';
     locked = false;
     fragmentBusy = false;
   }
 
   function updateScore() {
-    scoreText.textContent = `${score}/5`;
+    if (scoreText) scoreText.textContent = `${score}/5`;
+    scorePanel.setAttribute('aria-label', `Piezas verdes acumuladas: ${score} de 5`);
     scoreSlots.forEach((slot, index) => {
       slot.classList.toggle('is-filled', index < score);
     });
@@ -1097,6 +1399,7 @@
     const slotIndex = score;
     piece.classList.add('is-collected');
     piece.disabled = true;
+    playGreenRewardSound();
     animatePointToScore(piece, slotIndex);
 
     score = Math.min(5, score + 1);
@@ -1116,42 +1419,304 @@
     }
 
     restoreRoute();
+    shufflePiecePositions();
+    await wait(720);
     locked = false;
   }
 
-  function playYellowSound() {
+  function getAudioContext() {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return;
+    if (!AudioContextClass) return null;
 
     try {
       if (!audioContext) audioContext = new AudioContextClass();
       if (audioContext.state === 'suspended') audioContext.resume();
+      return audioContext;
+    } catch (error) {
+      console.warn('No fue posible iniciar el audio de la experiencia.', error);
+      return null;
+    }
+  }
 
-      const now = audioContext.currentTime;
-      const master = audioContext.createGain();
+  function playBlueBubbleSound(isAligned = false) {
+    const context = getAudioContext();
+    if (!context) return;
+
+    const now = context.currentTime;
+    const master = context.createGain();
+    const filter = context.createBiquadFilter();
+    const oscillator = context.createOscillator();
+    const shimmer = context.createOscillator();
+    const shimmerGain = context.createGain();
+
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(isAligned ? 0.19 : 0.14, now + 0.008);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + (isAligned ? 0.32 : 0.24));
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(isAligned ? 2700 : 2100, now);
+    filter.Q.setValueAtTime(1.4, now);
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(isAligned ? 520 : 390, now);
+    oscillator.frequency.exponentialRampToValueAtTime(isAligned ? 980 : 690, now + 0.11);
+    oscillator.frequency.exponentialRampToValueAtTime(isAligned ? 760 : 540, now + 0.22);
+
+    shimmer.type = 'triangle';
+    shimmer.frequency.setValueAtTime(isAligned ? 1180 : 880, now);
+    shimmer.frequency.exponentialRampToValueAtTime(isAligned ? 1540 : 1120, now + 0.12);
+    shimmerGain.gain.setValueAtTime(0.0001, now);
+    shimmerGain.gain.exponentialRampToValueAtTime(isAligned ? 0.055 : 0.035, now + 0.012);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+
+    oscillator.connect(filter);
+    filter.connect(master);
+    shimmer.connect(shimmerGain);
+    shimmerGain.connect(master);
+    master.connect(context.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.28);
+    shimmer.start(now);
+    shimmer.stop(now + 0.22);
+  }
+
+  function playRedTransitionSound() {
+    const context = getAudioContext();
+    if (!context) return;
+
+    const now = context.currentTime;
+    const master = context.createGain();
+    const low = context.createOscillator();
+    const strike = context.createOscillator();
+    const strikeGain = context.createGain();
+
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(0.24, now + 0.018);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.72);
+    master.connect(context.destination);
+
+    low.type = 'sawtooth';
+    low.frequency.setValueAtTime(150, now);
+    low.frequency.exponentialRampToValueAtTime(58, now + 0.48);
+    low.connect(master);
+
+    strike.type = 'square';
+    strike.frequency.setValueAtTime(310, now);
+    strike.frequency.exponentialRampToValueAtTime(115, now + 0.16);
+    strikeGain.gain.setValueAtTime(0.0001, now);
+    strikeGain.gain.exponentialRampToValueAtTime(0.11, now + 0.008);
+    strikeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+    strike.connect(strikeGain);
+    strikeGain.connect(master);
+
+    low.start(now);
+    low.stop(now + 0.52);
+    strike.start(now);
+    strike.stop(now + 0.22);
+
+    // Segundo impacto sincronizado con la multiplicación de piezas.
+    const burstAt = now + 0.48;
+    const noiseBuffer = context.createBuffer(
+      1,
+      Math.floor(context.sampleRate * 0.32),
+      context.sampleRate
+    );
+    const noiseData = noiseBuffer.getChannelData(0);
+
+    for (let index = 0; index < noiseData.length; index += 1) {
+      const envelope = 1 - index / noiseData.length;
+      noiseData[index] = (Math.random() * 2 - 1) * envelope;
+    }
+
+    const noise = context.createBufferSource();
+    const noiseFilter = context.createBiquadFilter();
+    const noiseGain = context.createGain();
+    const burstTone = context.createOscillator();
+    const burstToneGain = context.createGain();
+
+    noise.buffer = noiseBuffer;
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.setValueAtTime(760, burstAt);
+    noiseFilter.Q.setValueAtTime(0.85, burstAt);
+    noiseGain.gain.setValueAtTime(0.0001, burstAt);
+    noiseGain.gain.exponentialRampToValueAtTime(0.12, burstAt + 0.012);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, burstAt + 0.3);
+
+    burstTone.type = 'triangle';
+    burstTone.frequency.setValueAtTime(420, burstAt);
+    burstTone.frequency.exponentialRampToValueAtTime(120, burstAt + 0.34);
+    burstToneGain.gain.setValueAtTime(0.0001, burstAt);
+    burstToneGain.gain.exponentialRampToValueAtTime(0.13, burstAt + 0.01);
+    burstToneGain.gain.exponentialRampToValueAtTime(0.0001, burstAt + 0.36);
+
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(context.destination);
+    burstTone.connect(burstToneGain);
+    burstToneGain.connect(context.destination);
+
+    noise.start(burstAt);
+    noise.stop(burstAt + 0.32);
+    burstTone.start(burstAt);
+    burstTone.stop(burstAt + 0.38);
+  }
+
+  function playLoadingSound() {
+    const context = getAudioContext();
+    if (!context) return;
+
+    const now = context.currentTime;
+    const master = context.createGain();
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(0.16, now + 0.04);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 1.7);
+    master.connect(context.destination);
+
+    [196, 246.94, 293.66, 392].forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const start = now + index * 0.32;
+
+      oscillator.type = index % 2 === 0 ? 'sine' : 'triangle';
+      oscillator.frequency.setValueAtTime(frequency, start);
+      oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.08, start + 0.28);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.11, start + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.31);
+
+      oscillator.connect(gain);
+      gain.connect(master);
+      oscillator.start(start);
+      oscillator.stop(start + 0.34);
+    });
+  }
+
+  function playGreenRewardSound() {
+    const context = getAudioContext();
+    if (!context) return;
+
+    const now = context.currentTime;
+    const master = context.createGain();
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(0.60, now + 0.018);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+    master.connect(context.destination);
+
+    [523.25, 659.25, 783.99].forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const start = now + index * 0.075;
+
+      oscillator.type = index === 2 ? 'sine' : 'triangle';
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.18, start + 0.016);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.34);
+
+      oscillator.connect(gain);
+      gain.connect(master);
+      oscillator.start(start);
+      oscillator.stop(start + 0.38);
+    });
+  }
+
+  async function startLoadingExperience() {
+    if (loadingStarted || !loadingScreen) return;
+
+    loadingStarted = true;
+    loadingStart?.setAttribute('aria-busy', 'true');
+    loadingScreen.classList.add('is-loading');
+    playLoadingSound();
+
+    await wait(1850);
+    loadingScreen.classList.add('is-complete');
+    await wait(620);
+    loadingScreen.setAttribute('aria-hidden', 'true');
+    loadingScreen.remove();
+  }
+
+  function playYellowSound() {
+    const context = getAudioContext();
+    if (!context) return;
+
+    try {
+      const now = context.currentTime;
+      const master = context.createGain();
+      const compressor = context.createDynamicsCompressor();
+
+      compressor.threshold.setValueAtTime(-18, now);
+      compressor.knee.setValueAtTime(18, now);
+      compressor.ratio.setValueAtTime(4, now);
+      compressor.attack.setValueAtTime(0.004, now);
+      compressor.release.setValueAtTime(0.28, now);
+
       master.gain.setValueAtTime(0.0001, now);
-      master.gain.exponentialRampToValueAtTime(0.34, now + 0.035);
-      master.gain.exponentialRampToValueAtTime(0.0001, now + 1.45);
-      master.connect(audioContext.destination);
+      master.gain.exponentialRampToValueAtTime(0.4, now + 0.025);
+      master.gain.setValueAtTime(0.4, now + 0.72);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 2.15);
+      master.connect(compressor);
+      compressor.connect(context.destination);
 
-      const notes = [392, 523.25, 659.25, 783.99, 1046.5];
-      notes.forEach((frequency, index) => {
-        const oscillator = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        const start = now + index * 0.105;
+      // Ascenso rápido que anuncia la victoria.
+      const melody = [392, 493.88, 587.33, 783.99, 987.77, 1174.66];
+      melody.forEach((frequency, index) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const start = now + index * 0.11;
 
-        oscillator.type = index < 2 ? 'triangle' : 'sine';
+        oscillator.type = index < 3 ? 'triangle' : 'sine';
         oscillator.frequency.setValueAtTime(frequency, start);
-        oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.015, start + 0.42);
+        oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.012, start + 0.28);
 
         gain.gain.setValueAtTime(0.0001, start);
-        gain.gain.exponentialRampToValueAtTime(0.22, start + 0.025);
-        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.72);
+        gain.gain.exponentialRampToValueAtTime(0.19, start + 0.018);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.46);
 
         oscillator.connect(gain);
         gain.connect(master);
         oscillator.start(start);
-        oscillator.stop(start + 0.75);
+        oscillator.stop(start + 0.5);
+      });
+
+      // Acorde final más lleno y reconocible como “ganaste”.
+      [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const start = now + 0.72;
+
+        oscillator.type = index % 2 === 0 ? 'sine' : 'triangle';
+        oscillator.frequency.setValueAtTime(frequency, start);
+        oscillator.detune.setValueAtTime(index % 2 === 0 ? -3 : 3, start);
+
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.15, start + 0.035);
+        gain.gain.setValueAtTime(0.12, start + 0.48);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.25);
+
+        oscillator.connect(gain);
+        gain.connect(master);
+        oscillator.start(start);
+        oscillator.stop(start + 1.3);
+      });
+
+      // Destellos agudos al cierre.
+      [1567.98, 2093].forEach((frequency, index) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const start = now + 0.88 + index * 0.17;
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, start);
+        oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.08, start + 0.18);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.07, start + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.34);
+
+        oscillator.connect(gain);
+        gain.connect(master);
+        oscillator.start(start);
+        oscillator.stop(start + 0.36);
       });
     } catch (error) {
       console.warn('No fue posible reproducir el sonido amarillo.', error);
@@ -1159,7 +1724,7 @@
   }
 
   async function playWinTransition() {
-    playYellowSound();
+    playAudio(winAudio);
     scorePanel.classList.remove('is-visible');
     routeStage.classList.remove('is-visible');
     routeStage.setAttribute('aria-hidden', 'true');
@@ -1195,13 +1760,15 @@
     resetRedGame();
     resetBlueGame();
 
-    redTransition.classList.remove('is-visible');
+    redTransition.classList.remove('is-visible', 'is-handoff');
+    redTransition.setAttribute('aria-hidden', 'true');
     greenFeedback.classList.remove('is-visible');
     winTransition.classList.remove('is-visible');
     winTransition.setAttribute('aria-hidden', 'true');
     scorePanel.classList.remove('is-visible');
 
     scene.classList.remove('route-active', 'journey-playing');
+    resetPawnEraser();
     routeStage.className = 'route-stage';
     routeStage.setAttribute('aria-hidden', 'true');
     intro.classList.remove('is-hidden');
@@ -1215,6 +1782,7 @@
     positionPieces();
   }
 
+  window.setTimeout(startLoadingExperience, 650);
   redMaze.addEventListener('pointerdown', handleRedPointerDown);
   redMaze.addEventListener('pointermove', handleRedPointerMove);
   redMaze.addEventListener('pointerup', handleRedPointerEnd);
