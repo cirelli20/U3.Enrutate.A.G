@@ -1267,7 +1267,7 @@
     blueWheel.disabled = false;
     blueBreakPiece.disabled = true;
     blueBreakPiece.classList.remove('is-hit');
-    blueInstruction.textContent = 'HAZ CLIC PARA UNIR LAS PIEZAS';
+    blueInstruction.textContent = 'HAZ CLICK PARA UNIR LAS PIEZAS';
     blueCounter.textContent = '';
 
     blueFragments.forEach((fragment, index) => {
@@ -1286,7 +1286,7 @@
     blueState = 'orbit';
     blueGame.classList.add('is-visible', 'is-orbiting');
     blueGame.setAttribute('aria-hidden', 'false');
-    blueInstruction.textContent = 'HAZ CLIC EN LAS PIEZAS PARA UNIRLAS';
+    blueInstruction.textContent = 'HAZ CLICK EN LAS PIEZAS PARA UNIRLAS';
     blueCounter.textContent = 'LAS PIEZAS ESTÁN GIRANDO';
 
     await wait(450);
@@ -1309,7 +1309,7 @@
 
     blueGame.classList.add('is-piece-ready');
     blueBreakPiece.disabled = false;
-    blueInstruction.textContent = 'HAZ CLIC EN LA PIEZA PARA DESARMARLA';
+    blueInstruction.textContent = 'HAZ CLICK EN LA PIEZA PARA DESARMARLA';
     blueCounter.textContent = `${blueFragments.length} FRAGMENTOS RESTANTES`;
     blueState = 'breaking';
     locked = false;
