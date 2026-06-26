@@ -3,6 +3,7 @@
 window.addEventListener("DOMContentLoaded", () => {
   const hasGSAP = typeof window.gsap !== "undefined";
   const hasScrollTrigger = typeof window.ScrollTrigger !== "undefined";
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (hasGSAP && hasScrollTrigger) {
     gsap.registerPlugin(ScrollTrigger);
@@ -18,6 +19,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (introWord) {
     introWord.textContent = "";
+
     [...word].forEach((character) => {
       const letter = document.createElement("span");
       letter.className = "intro-letter";
@@ -28,11 +30,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const finishIntro = () => {
     document.body.classList.remove("intro-active");
-    if (introScreen) introScreen.remove();
-    if (hasGSAP && hasScrollTrigger) ScrollTrigger.refresh();
+    introScreen?.remove();
+
+    if (hasGSAP && hasScrollTrigger) {
+      ScrollTrigger.refresh();
+    }
   };
 
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !hasGSAP) {
+  if (reduceMotion || !hasGSAP) {
     window.setTimeout(finishIntro, 650);
   } else {
     const introTimeline = gsap.timeline({
@@ -47,7 +52,11 @@ window.addEventListener("DOMContentLoaded", () => {
         rotateX: -90,
         filter: "blur(9px)"
       })
-      .from(".intro-kicker", { opacity: 0, y: 14, duration: 0.45 })
+      .from(".intro-kicker", {
+        opacity: 0,
+        y: 14,
+        duration: 0.45
+      })
       .to(".intro-letter", {
         yPercent: 0,
         opacity: 1,
@@ -56,7 +65,11 @@ window.addEventListener("DOMContentLoaded", () => {
         duration: 0.72,
         stagger: 0.11
       }, "-=0.18")
-      .from(".intro-hint", { opacity: 0, y: 10, duration: 0.4 }, "-=0.18")
+      .from(".intro-hint", {
+        opacity: 0,
+        y: 10,
+        duration: 0.4
+      }, "-=0.18")
       .to(".intro-word", {
         letterSpacing: "0.02em",
         duration: 0.7,
@@ -76,9 +89,23 @@ window.addEventListener("DOMContentLoaded", () => {
   const finePointer = window.matchMedia("(pointer: fine)").matches;
 
   if (cursor && finePointer) {
+    let cursorFrame = null;
+    let pointerX = -50;
+    let pointerY = -50;
+
+    const updateCursor = () => {
+      cursor.style.transform = `translate(${pointerX - 9}px, ${pointerY - 9}px)`;
+      cursorFrame = null;
+    };
+
     window.addEventListener("mousemove", (event) => {
-      cursor.style.transform = `translate(${event.clientX - 9}px, ${event.clientY - 9}px)`;
-    });
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+
+      if (cursorFrame === null) {
+        cursorFrame = window.requestAnimationFrame(updateCursor);
+      }
+    }, { passive: true });
 
     document.querySelectorAll("a, button, [data-action-card]").forEach((element) => {
       element.addEventListener("mouseenter", () => cursor.classList.add("is-hovering"));
@@ -89,9 +116,10 @@ window.addEventListener("DOMContentLoaded", () => {
   /* ─────────────────────────────
      GALERÍA DE ACCIONES + HEADER
   ───────────────────────────── */
-  const actionGallery = document.querySelector(".action-gallery");
   const actionCards = [...document.querySelectorAll("[data-action-card]")];
-  let preferredAction = actionCards.find((card) => card.classList.contains("movimientos")) || actionCards[0];
+  let preferredAction =
+    actionCards.find((card) => card.classList.contains("movimientos")) ||
+    actionCards[0];
 
   const positionActionCards = (activeCard) => {
     if (!activeCard || !actionCards.length) return;
@@ -137,23 +165,38 @@ window.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll(".header-action").forEach((button) => {
     button.addEventListener("click", () => {
-      const target = document.querySelector(button.dataset.target);
+      const targetSelector = button.dataset.target;
+      if (!targetSelector) return;
+
+      const target = document.querySelector(targetSelector);
       if (!target) return;
 
       if (target.matches("[data-action-card]")) {
         preferredAction = target;
         expandActionCard(target);
-        document.querySelector(".action-gallery-section")?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        document.querySelector(".action-gallery-section")?.scrollIntoView({
+          behavior: reduceMotion ? "auto" : "smooth",
+          block: "center"
+        });
 
         if (window.innerWidth <= 820) {
-          window.setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }), 350);
+          window.setTimeout(() => {
+            target.scrollIntoView({
+              behavior: reduceMotion ? "auto" : "smooth",
+              block: "nearest",
+              inline: "center"
+            });
+          }, reduceMotion ? 0 : 350);
         }
       } else {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        target.scrollIntoView({
+          behavior: reduceMotion ? "auto" : "smooth",
+          block: "start"
+        });
       }
     });
   });
-
 
   /* ─────────────────────────────
      REGLAS: TARJETAS INDEPENDIENTES + ÍNDICE LATERAL
@@ -163,6 +206,8 @@ window.addEventListener("DOMContentLoaded", () => {
   let activeRule = 0;
 
   const setActiveRule = (nextIndex) => {
+    if (!ruleCards.length) return;
+
     const index = Math.max(0, Math.min(ruleCards.length - 1, nextIndex));
     activeRule = index;
 
@@ -171,8 +216,14 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     discSteps.forEach((step, stepIndex) => {
-      step.classList.toggle("is-active", stepIndex === index);
-      step.setAttribute("aria-current", stepIndex === index ? "step" : "false");
+      const isCurrent = stepIndex === index;
+      step.classList.toggle("is-active", isCurrent);
+
+      if (isCurrent) {
+        step.setAttribute("aria-current", "step");
+      } else {
+        step.removeAttribute("aria-current");
+      }
     });
   };
 
@@ -182,8 +233,12 @@ window.addEventListener("DOMContentLoaded", () => {
     step.addEventListener("click", () => {
       const targetCard = ruleCards[index];
       if (!targetCard) return;
+
       setActiveRule(index);
-      targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      targetCard.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "center"
+      });
     });
   });
 
@@ -195,8 +250,11 @@ window.addEventListener("DOMContentLoaded", () => {
         .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
 
       if (!visibleEntries.length) return;
+
       const index = ruleCards.indexOf(visibleEntries[0].target);
-      if (index >= 0 && index !== activeRule) setActiveRule(index);
+      if (index >= 0 && index !== activeRule) {
+        setActiveRule(index);
+      }
     }, {
       root: null,
       rootMargin: "-24% 0px -42% 0px",
@@ -205,6 +263,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
     ruleCards.forEach((card) => ruleObserver.observe(card));
   } else {
+    let ruleFrame = null;
+
     const updateActiveRule = () => {
       const viewportCenter = window.innerHeight * 0.48;
       let nearestIndex = 0;
@@ -214,16 +274,26 @@ window.addEventListener("DOMContentLoaded", () => {
         const rect = card.getBoundingClientRect();
         const cardCenter = rect.top + rect.height / 2;
         const distance = Math.abs(cardCenter - viewportCenter);
+
         if (distance < nearestDistance) {
           nearestDistance = distance;
           nearestIndex = index;
         }
       });
 
-      if (nearestIndex !== activeRule) setActiveRule(nearestIndex);
+      if (nearestIndex !== activeRule) {
+        setActiveRule(nearestIndex);
+      }
+
+      ruleFrame = null;
     };
 
-    window.addEventListener("scroll", updateActiveRule, { passive: true });
+    window.addEventListener("scroll", () => {
+      if (ruleFrame === null) {
+        ruleFrame = window.requestAnimationFrame(updateActiveRule);
+      }
+    }, { passive: true });
+
     updateActiveRule();
   }
 
@@ -247,32 +317,39 @@ window.addEventListener("DOMContentLoaded", () => {
         { opacity: 0 },
         {
           opacity: 1,
-          duration: 1,
+          duration: 0.55,
           ease: "power3.out",
           scrollTrigger: {
             trigger: ".action-gallery",
-            start: "top 78%",
+            start: "top 90%",
             toggleActions: "play none none reverse"
           }
         }
       );
+    const media = card.querySelector(".action-media img");
 
-      const media = card.querySelector(".action-media img");
-      if (media) {
-        gsap.from(media, {
-          rotation: -8,
-          scale: 0.82,
-          duration: 1.15,
-          ease: "back.out(1.35)",
-          scrollTrigger: {
-            trigger: ".action-gallery",
-            start: "top 72%",
-            toggleActions: "play none none reverse"
-          }
-        });
-      }
-    });
-  }
+    if (media) {
+      gsap.from(media, {
+        rotation: -8,
+        scale: 0.82,
+        duration: 0.7,
+        ease: "back.out(1.35)",
+
+        // Al terminar, libera el transform para permitir el hover del CSS.
+        onComplete: () => {
+          gsap.set(media, { clearProps: "transform" });
+        },
+
+        scrollTrigger: {
+          trigger: ".action-gallery",
+          start: "top 90%",
+          toggleActions: "play none none reverse"
+        }
+      });
+    }
+  });
+}
+  
 
   /* ─────────────────────────────
      GALERÍA HORIZONTAL CONTROLADA POR SCROLL
@@ -282,67 +359,188 @@ window.addEventListener("DOMContentLoaded", () => {
   const galleryTrack = document.querySelector(".gallery-track");
 
   if (gallerySection && galleryStage && galleryTrack) {
+    let galleryFrame = null;
+
     const updateGallery = () => {
       const sectionRect = gallerySection.getBoundingClientRect();
       const travelY = gallerySection.offsetHeight - galleryStage.offsetHeight;
       const inicioAnticipado = window.innerHeight * 0.45;
 
-const progress = travelY > 0
-  ? Math.min(
-      1,
-      Math.max(
-        0,
-        (inicioAnticipado - sectionRect.top) /
-        (travelY + inicioAnticipado)
-      )
-    )
-  : 0;
+      const progress = travelY > 0
+        ? Math.min(
+          1,
+          Math.max(
+            0,
+            (inicioAnticipado - sectionRect.top) /
+              (travelY + inicioAnticipado)
+          )
+        )
+        : 0;
+
       const maxX = Math.max(0, galleryTrack.scrollWidth - galleryStage.clientWidth);
       galleryTrack.style.transform = `translate3d(${-progress * maxX}px, 0, 0)`;
+      galleryFrame = null;
     };
 
-    window.addEventListener("scroll", updateGallery, { passive: true });
-    window.addEventListener("resize", updateGallery);
-    window.addEventListener("load", updateGallery);
-    updateGallery();
-  }
-/* VIDEO COMERCIAL DE YOUTUBE */
-const youtubePlayer = document.querySelector(".youtube-player");
+    const requestGalleryUpdate = () => {
+      if (galleryFrame === null) {
+        galleryFrame = window.requestAnimationFrame(updateGallery);
+      }
+    };
 
-if (youtubePlayer) {
-  const playYoutubeVideo = () => {
-    if (youtubePlayer.classList.contains("is-playing")) return;
+    window.addEventListener("scroll", requestGalleryUpdate, { passive: true });
+    window.addEventListener("resize", requestGalleryUpdate);
+    window.addEventListener("load", requestGalleryUpdate);
 
-    const videoId = youtubePlayer.dataset.videoId;
-    const iframe = document.createElement("iframe");
-
-    iframe.src =
-      `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&controls=1`;
-
-    iframe.title = "Video comercial de Enrútate";
-    iframe.allow =
-      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-    iframe.allowFullscreen = true;
-
-    youtubePlayer.classList.add("is-playing");
-    youtubePlayer.innerHTML = "";
-    youtubePlayer.appendChild(iframe);
-  };
-
-  youtubePlayer.addEventListener("click", playYoutubeVideo);
-
-  youtubePlayer.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      playYoutubeVideo();
+    if ("ResizeObserver" in window) {
+      const galleryResizeObserver = new ResizeObserver(requestGalleryUpdate);
+      galleryResizeObserver.observe(galleryStage);
+      galleryResizeObserver.observe(galleryTrack);
     }
-  });
-}
+
+    requestGalleryUpdate();
+  }
+
+  /* VIDEO COMERCIAL DE YOUTUBE */
+  const youtubePlayer = document.querySelector(".youtube-player");
+
+  if (youtubePlayer) {
+    const playYoutubeVideo = () => {
+      if (youtubePlayer.classList.contains("is-playing")) return;
+
+      const videoId = youtubePlayer.dataset.videoId;
+      if (!videoId) return;
+
+      const iframe = document.createElement("iframe");
+
+      iframe.src =
+        `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&controls=1`;
+      iframe.title = "Video comercial de Enrútate";
+      iframe.allow =
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      iframe.allowFullscreen = true;
+
+      youtubePlayer.classList.add("is-playing");
+      youtubePlayer.removeAttribute("role");
+      youtubePlayer.removeAttribute("tabindex");
+      youtubePlayer.removeAttribute("aria-label");
+      youtubePlayer.replaceChildren(iframe);
+    };
+
+    youtubePlayer.addEventListener("click", playYoutubeVideo);
+
+    youtubePlayer.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        playYoutubeVideo();
+      }
+    });
+  }
+
+  /* ─────────────────────────────
+     FUNCIONAMIENTO DE LA SECCIÓN DESPLEGABLE
+  ───────────────────────────── */
+  const gameExtraSection = document.querySelector(".game-extra-section");
+  const gameExtraTrigger = document.getElementById("game-extra-trigger");
+  const gameExtraPanel = document.getElementById("game-extra-panel");
+  const gameExtraClose = document.getElementById("game-extra-close");
+  const gameExtraFrame = document.getElementById("game-extra-frame");
+
+  if (
+    gameExtraSection &&
+    gameExtraTrigger &&
+    gameExtraPanel &&
+    gameExtraClose &&
+    gameExtraFrame
+  ) {
+    let closeTimer = null;
+
+    const refreshPageAnimations = () => {
+      if (hasGSAP && hasScrollTrigger) {
+        ScrollTrigger.refresh();
+      }
+
+      window.dispatchEvent(new Event("resize"));
+    };
+
+    const loadIframe = () => {
+      if (!gameExtraFrame.getAttribute("src") && gameExtraFrame.dataset.src) {
+        gameExtraFrame.setAttribute("src", gameExtraFrame.dataset.src);
+      }
+    };
+
+    const openPanel = () => {
+      if (closeTimer !== null) {
+        window.clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+
+      gameExtraPanel.hidden = false;
+      gameExtraPanel.setAttribute("aria-hidden", "false");
+      gameExtraTrigger.setAttribute("aria-expanded", "true");
+      loadIframe();
+
+      window.requestAnimationFrame(() => {
+        gameExtraSection.classList.add("is-open");
+        window.setTimeout(refreshPageAnimations, reduceMotion ? 20 : 780);
+      });
+    };
+
+    const closePanel = (returnFocus = false) => {
+      gameExtraSection.classList.remove("is-open");
+      gameExtraTrigger.setAttribute("aria-expanded", "false");
+      gameExtraPanel.setAttribute("aria-hidden", "true");
+
+      closeTimer = window.setTimeout(() => {
+        gameExtraPanel.hidden = true;
+        closeTimer = null;
+        refreshPageAnimations();
+
+        if (returnFocus) {
+          gameExtraTrigger.focus();
+        }
+      }, reduceMotion ? 20 : 740);
+    };
+
+    const togglePanel = () => {
+      const isOpen = gameExtraTrigger.getAttribute("aria-expanded") === "true";
+
+      if (isOpen) {
+        closePanel(false);
+      } else {
+        openPanel();
+      }
+    };
+
+    gameExtraTrigger.addEventListener("click", togglePanel);
+    gameExtraClose.addEventListener("click", () => closePanel(true));
+
+    gameExtraSection.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && gameExtraSection.classList.contains("is-open")) {
+        event.preventDefault();
+        closePanel(true);
+      }
+    });
+
+    gameExtraFrame.addEventListener("load", refreshPageAnimations);
+  }
+
   /* ─────────────────────────────
      AJUSTES AL CARGAR RECURSOS
   ───────────────────────────── */
   window.addEventListener("load", () => {
-    if (hasGSAP && hasScrollTrigger) ScrollTrigger.refresh();
+    if (hasGSAP && hasScrollTrigger) {
+      ScrollTrigger.refresh();
+    }
   });
-  
+
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(() => {
+      if (hasGSAP && hasScrollTrigger) {
+        ScrollTrigger.refresh();
+      }
+
+      window.dispatchEvent(new Event("resize"));
+    });
+  }
 });
